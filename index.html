@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Life Atlas · 旅居与吃喝记录</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<style>
+:root{
+  --ink:#0d1117;          /* base background (deep ink) */
+  --ink-2:#141b25;        /* panels */
+  --ink-3:#1c2531;        /* raised */
+  --line:#2a3441;         /* hairlines */
+  --line-soft:#212a36;
+  --text:#e8e2d4;         /* warm parchment text */
+  --text-dim:#9aa4b2;
+  --text-faint:#5d6876;
+  --gold:#e3b341;         /* visited */
+  --teal:#3fb8af;         /* sojourned (旅居) */
+  --coral:#ff6b6b;        /* resided (长居) */
+  --gold-soft:rgba(227,179,65,.14);
+  --teal-soft:rgba(63,184,175,.14);
+  --coral-soft:rgba(255,107,107,.14);
+  --accent:#e3b341;
+  --shadow:0 18px 50px -12px rgba(0,0,0,.7);
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Space Grotesk",system-ui,sans-serif;
+  background:var(--ink);
+  color:var(--text);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.serif{font-family:"Fraunces",Georgia,serif;}
+.mono{font-family:"JetBrains Mono",monospace;}
+
+/* ---------- layout ---------- */
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+#map{position:absolute;inset:0;z-index:0;background:var(--ink)}
+.leaflet-container{background:#0a0e14}
+
+/* topbar */
+#topbar{
+  position:relative;z-index:600;
+  display:flex;align-items:center;gap:18px;
+  padding:14px 22px;
+  background:linear-gradient(180deg,rgba(13,17,23,.92),rgba(13,17,23,.72));
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+}
+.brand{display:flex;align-items:baseline;gap:12px;user-select:none}
+.brand .glyph{
+  font-family:"Fraunces",serif;font-weight:700;font-size:26px;letter-spacing:.5px;
+  color:var(--text);
+}
+.brand .glyph em{font-style:italic;color:var(--gold)}
+.brand .sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text-faint)}
+.spacer{flex:1}
+
+.legend{display:flex;gap:16px;align-items:center}
+.legend .item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-dim);cursor:pointer;
+  padding:5px 9px;border-radius:20px;border:1px solid transparent;transition:.18s}
+.legend .item:hover{border-color:var(--line)}
+.legend .item.off{opacity:.32}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.visited{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.dot.sojourned{background:var(--teal);box-shadow:0 0 10px var(--teal)}
+.dot.resided{background:var(--coral);box-shadow:0 0 10px var(--coral)}
+
+.btn{
+  font-family:inherit;font-size:13px;cursor:pointer;border:1px solid var(--line);
+  background:var(--ink-3);color:var(--text);padding:8px 15px;border-radius:9px;
+  transition:.16s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;
+}
+.btn:hover{border-color:var(--text-faint);background:#222d3a}
+.btn.primary{background:var(--gold);color:#1a1407;border-color:var(--gold);font-weight:600}
+.btn.primary:hover{background:#f0c452}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-icon{padding:8px 10px}
+
+.status-pill{font-size:11px;font-family:"JetBrains Mono",monospace;color:var(--text-faint);
+  display:flex;align-items:center;gap:7px}
+.status-pill .led{width:8px;height:8px;border-radius:50%;background:var(--text-faint);transition:.2s}
+.status-pill.ok .led{background:var(--teal);box-shadow:0 0 8px var(--teal)}
+.status-pill.busy .led{background:var(--gold);box-shadow:0 0 8px var(--gold);animation:pulse 1s infinite}
+.status-pill.dirty .led{background:var(--coral);box-shadow:0 0 8px var(--coral)}
+@keyframes pulse{50%{opacity:.3}}
+
+/* ---------- floating left rail: city list ---------- */
+.panel{
+  position:absolute;z-index:550;top:74px;bottom:18px;
+  background:linear-gradient(180deg,var(--ink-2),#10161e);
+  border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;
+}
+#rail{left:18px;width:312px}
+.panel-head{padding:16px 18px 12px;border-bottom:1px solid var(--line-soft)}
+.panel-head h2{font-family:"Fraunces",serif;font-weight:600;font-size:17px;letter-spacing:.3px}
+.search-wrap{position:relative;margin-top:12px}
+.search-wrap input{width:100%}
+input,textarea,select{
+  font-family:inherit;font-size:13px;background:#0c1119;color:var(--text);
+  border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;transition:.15s;
+}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+textarea{resize:vertical;line-height:1.55;min-height:64px}
+label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-faint);margin:0 0 6px 1px}
+.field{margin-bottom:14px}
+
+.geo-results{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:20;
+  background:var(--ink-3);border:1px solid var(--line);border-radius:9px;overflow:hidden;box-shadow:var(--shadow)}
+.geo-results div{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--line-soft)}
+.geo-results div:last-child{border:0}
+.geo-results div:hover{background:var(--gold-soft)}
+
+.city-list{flex:1;overflow-y:auto;padding:8px}
+.city-row{
+  display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;cursor:pointer;
+  border:1px solid transparent;transition:.14s;
+}
+.city-row:hover{background:#161e29}
+.city-row.active{background:#1a2331;border-color:var(--line)}
+.city-row .mk{width:9px;height:9px;border-radius:50%;flex:none}
+.city-row .nm{flex:1;min-width:0}
+.city-row .nm b{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.city-row .nm span{font-size:11px;color:var(--text-faint)}
+.city-row .sc{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--gold)}
+.empty{padding:40px 24px;text-align:center;color:var(--text-faint);font-size:13px;line-height:1.7}
+
+.rail-foot{padding:12px;border-top:1px solid var(--line-soft);display:flex;gap:8px}
+.count-chip{font-size:11px;color:var(--text-faint);font-family:"JetBrains Mono",monospace;
+  padding:5px 0;display:flex;gap:14px;flex:1}
+.count-chip b{color:var(--text-dim)}
+
+/* ---------- right detail ---------- */
+#detail{right:18px;width:430px;transform:translateX(calc(100% + 26px));transition:transform .34s cubic-bezier(.4,0,.2,1)}
+#detail.open{transform:none}
+.detail-scroll{overflow-y:auto;flex:1;padding:0}
+.detail-hero{padding:22px 24px 18px;border-bottom:1px solid var(--line-soft);position:relative}
+.detail-hero .close{position:absolute;top:16px;right:16px}
+.detail-hero .country{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-faint)}
+.detail-hero h1{font-family:"Fraunces",serif;font-weight:600;font-size:30px;line-height:1.05;margin:4px 0 2px}
+.detail-hero .coords{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text-faint)}
+.seg{display:flex;gap:6px;margin-top:16px}
+.seg button{flex:1;font-size:12px;padding:8px;border-radius:8px;border:1px solid var(--line);
+  background:#0c1119;color:var(--text-dim);cursor:pointer;transition:.15s}
+.seg button.on[data-s="visited"]{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+.seg button.on[data-s="sojourned"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal)}
+.seg button.on[data-s="resided"]{background:var(--coral-soft);border-color:var(--coral);color:var(--coral)}
+
+.section{padding:18px 24px;border-bottom:1px solid var(--line-soft)}
+.section h3{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text-faint);
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.section h3 .avg{font-family:"JetBrains Mono",monospace;color:var(--gold);font-size:13px;letter-spacing:0}
+
+/* scores + radar */
+.score-grid{display:flex;gap:18px;align-items:center}
+.radar-box{flex:none}
+.scores{flex:1;display:flex;flex-direction:column;gap:11px}
+.score-item{display:flex;align-items:center;gap:10px}
+.score-item .lab{font-size:12px;width:78px;color:var(--text-dim);flex:none}
+.score-item input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:4px;
+  background:linear-gradient(90deg,var(--gold) var(--p,50%),var(--line) var(--p,50%));padding:0}
+.score-item input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--text);box-shadow:0 0 0 3px var(--ink-2),0 0 10px rgba(0,0,0,.6);cursor:pointer}
+.score-item .val{font-family:"JetBrains Mono",monospace;font-size:13px;width:30px;text-align:right;color:var(--gold)}
+
+/* lists: restaurants / bars */
+.list-add{display:flex;gap:7px;margin-bottom:12px}
+.list-add input{flex:1}
+.entry{background:#0c1119;border:1px solid var(--line-soft);border-radius:10px;padding:11px 12px;margin-bottom:9px}
+.entry-top{display:flex;align-items:center;gap:9px}
+.entry-top .nm{flex:1;font-weight:500;font-size:14px}
+.rate{display:flex;align-items:center;gap:6px}
+.rate input{width:50px;text-align:center;padding:5px 4px;font-family:"JetBrains Mono",monospace}
+.rate .max{font-size:11px;color:var(--text-faint)}
+.entry .note{margin-top:8px}
+.entry .note input{font-size:12px;padding:6px 9px;color:var(--text-dim)}
+.del{background:transparent;border:0;color:var(--text-faint);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:6px}
+.del:hover{color:var(--coral);background:var(--coral-soft)}
+.type-sel{width:auto;flex:none;padding:5px 6px;font-size:12px;background:#10161e;border-radius:7px;max-width:108px}
+.list-add select{width:auto;flex:none;max-width:120px;padding:8px 8px;font-size:12px}
+.dims-edit .emoji{flex:none;width:52px;text-align:center;padding:8px 4px}
+
+/* cocktails */
+.cocktail-hint{font-size:11px;color:var(--text-faint);margin:10px 0 8px;line-height:1.6}
+.cocktail-hint b{color:var(--teal)} .cocktail-hint i{color:var(--coral);font-style:normal}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;font-size:12px;
+  background:#10161e;border:1px solid var(--line);color:var(--text-dim);cursor:pointer;transition:.15s;user-select:none}
+.chip[data-lvl="liked"]{background:var(--teal-soft);border-color:var(--teal);color:var(--teal);box-shadow:0 0 14px -4px var(--teal)}
+.chip[data-lvl="loved"]{background:var(--coral-soft);border-color:var(--coral);color:var(--coral);box-shadow:0 0 16px -3px var(--coral);font-weight:600}
+.chip .x{color:var(--text-faint);font-size:13px}
+.chip .x:hover{color:var(--coral)}
+.chip .star{font-size:10px;opacity:.85}
+
+/* notes section */
+.txt-stack .field:last-child{margin-bottom:0}
+
+/* ---------- modal (settings) ---------- */
+.overlay{position:fixed;inset:0;z-index:900;background:rgba(5,8,12,.66);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{width:min(520px,92vw);max-height:88vh;overflow-y:auto;background:var(--ink-2);
+  border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:26px 28px}
+.modal h2{font-family:"Fraunces",serif;font-size:22px;margin-bottom:4px}
+.modal .lede{font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:20px}
+.modal .lede a{color:var(--gold)}
+.dims-edit{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.dims-edit .row{display:flex;gap:7px}
+.modal-foot{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+.hint{font-size:11px;color:var(--text-faint);line-height:1.6;margin-top:6px}
+.warn{font-size:11px;color:var(--coral);margin-top:8px;display:none}
+.warn.show{display:block}
+
+/* toast */
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:1000;
+  background:var(--ink-3);border:1px solid var(--line);color:var(--text);padding:11px 20px;border-radius:11px;
+  font-size:13px;box-shadow:var(--shadow);opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.err{border-color:var(--coral);color:var(--coral)}
+
+/* leaflet marker glow */
+.pin{position:relative;width:16px;height:16px}
+.pin .core{position:absolute;inset:3px;border-radius:50%}
+.pin .halo{position:absolute;inset:-4px;border-radius:50%;opacity:.5;animation:halo 2.6s ease-out infinite}
+@keyframes halo{0%{transform:scale(.7);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+.pin.visited .core{background:var(--gold)} .pin.visited .halo{background:var(--gold)}
+.pin.sojourned .core{background:var(--teal)} .pin.sojourned .halo{background:var(--teal)}
+.pin.resided .core{background:var(--coral)} .pin.resided .halo{background:var(--coral)}
+.pin .core{box-shadow:0 0 12px 1px currentColor}
+
+.city-list::-webkit-scrollbar,.detail-scroll::-webkit-scrollbar,.modal::-webkit-scrollbar{width:9px}
+.city-list::-webkit-scrollbar-thumb,.detail-scroll::-webkit-scrollbar-thumb,.modal::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:2px solid transparent;background-clip:padding-box}
+
+@media(max-width:780px){
+  #rail{width:calc(100% - 36px)}
+  #detail{width:calc(100% - 36px)}
+  .legend{display:none}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="brand">
+      <span class="glyph serif">Life&nbsp;<em>Atlas</em></span>
+      <span class="sub">旅居 · 吃 · 喝</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="legend" id="legend">
+      <div class="item" data-f="visited"><span class="dot visited"></span>去过</div>
+      <div class="item" data-f="sojourned"><span class="dot sojourned"></span>旅居 &gt;1月</div>
+      <div class="item" data-f="resided"><span class="dot resided"></span>长居</div>
+    </div>
+    <div class="status-pill" id="statusPill"><span class="led"></span><span id="statusTxt">未连接</span></div>
+    <button class="btn primary" id="saveBtn" disabled>保存到 GitHub</button>
+    <button class="btn btn-icon ghost" id="settingsBtn" title="设置">⚙</button>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- left rail -->
+  <div class="panel" id="rail">
+    <div class="panel-head">
+      <h2 class="serif">我的城市</h2>
+      <div class="search-wrap">
+        <input id="cityFilter" placeholder="筛选 / 搜索城市以添加…" autocomplete="off" />
+        <div class="geo-results" id="geoResults" style="display:none"></div>
+      </div>
+    </div>
+    <div class="city-list" id="cityList"></div>
+    <div class="rail-foot">
+      <div class="count-chip" id="counts"></div>
+    </div>
+  </div>
+
+  <!-- right detail -->
+  <div class="panel" id="detail">
+    <div class="detail-scroll" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- settings modal -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2 class="serif">连接你的私有数据</h2>
+    <p class="lede">应用代码托管在公开 repo，个人数据存放在<b>私有 repo 的 <span class="mono">life.json</span></b>。
+      下方信息只保存在你本机浏览器（localStorage），不会写入任何代码。<br>
+      需要一个 GitHub <b>Fine-grained token</b>，对该私有 repo 授予 <b>Contents: Read and write</b> 权限。
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">前往创建 →</a>
+    </p>
+    <div class="field"><label>仓库 Owner（用户名/组织）</label><input id="setOwner" placeholder="例如 yourname" /></div>
+    <div class="field"><label>私有仓库名</label><input id="setRepo" placeholder="例如 my-private-data" /></div>
+    <div class="field"><label>文件路径</label><input id="setPath" value="life.json" /></div>
+    <div class="field"><label>Fine-grained Token</label><input id="setToken" type="password" placeholder="github_pat_…" /></div>
+
+    <div class="field">
+      <label>城市评分维度（4–6 个，每行一个）</label>
+      <div class="dims-edit" id="dimsEdit"></div>
+      <button class="btn ghost" id="addDim" style="font-size:12px;padding:6px 10px">+ 添加维度</button>
+    </div>
+
+    <div class="field">
+      <label>「其他店铺」类型（餐厅 / Bar 已独立，无需在此设置）</label>
+      <div class="dims-edit" id="otypesEdit"></div>
+      <button class="btn ghost" id="addOtype" style="font-size:12px;padding:6px 10px">+ 添加类型</button>
+      <div class="hint">emoji + 名称。改名/删除不会丢失已记录的店（按名称匹配显示）。</div>
+    </div>
+    <div class="warn" id="setWarn"></div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="cancelSet">取消</button>
+      <button class="btn primary" id="connectBtn">连接并加载</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Life Atlas — 单文件应用
+   公开 repo 托管本文件；私有 repo 存 life.json
+   ============================================================ */
+
+const DEFAULT_DIMS = ["美食","气候环境","性价比","交通便利","安全感","综合宜居"];
+const STATUS_META = {
+  visited:   {label:"去过",       color:"var(--gold)"},
+  sojourned: {label:"旅居 (>1月)", color:"var(--teal)"},
+  resided:   {label:"长居",       color:"var(--coral)"}
+};
+const COCKTAIL_LEVELS = ["tried","liked","loved"]; // 喝过 → 喜欢 → 特别喜欢
+// 餐厅、Bar 独立成列；以下为「其他店铺」合并列表里可选的类型标签（可在设置里增删改）
+const DEFAULT_OTHER_TYPES = [
+  {label:"桌游",     emoji:"🎲"},
+  {label:"密室逃脱", emoji:"🔓"},
+  {label:"剧本杀",   emoji:"🕵️"},
+  {label:"足浴按摩", emoji:"💆"},
+  {label:"水疗温泉", emoji:"♨️"},
+  {label:"KTV",      emoji:"🎤"},
+  {label:"咖啡馆",   emoji:"☕"}
+];
+
+const state = {
+  settings: load("la_settings", {owner:"",repo:"",path:"life.json",token:""}),
+  data: {version:1, config:{dimensions:[...DEFAULT_DIMS], otherTypes:DEFAULT_OTHER_TYPES.map(c=>({...c}))}, cities:[]},
+  sha: null,
+  selectedId: null,
+  filters: {visited:true, sojourned:true, resided:true},
+  dirty: false,
+  loaded: false
+};
+
+/* ---------- tiny helpers ---------- */
+function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function $(s,r=document){return r.querySelector(s)}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n))}
+
+function toast(msg,err){
+  const t=$("#toast");t.textContent=msg;t.className=err?"show err":"show";
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className="",2600);
+}
+
+/* UTF-8 safe base64 */
+function b64encode(str){
+  const bytes=new TextEncoder().encode(str);let bin="";
+  const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk) bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));
+  return btoa(bin);
+}
+function b64decode(b64){
+  const bin=atob(b64.replace(/\s/g,""));const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/* ============================================================
+   MAP
+   ============================================================ */
+const map = L.map("map",{zoomControl:false,worldCopyJump:true,minZoom:2,maxZoom:12})
+  .setView([26,12],2.4);
+L.control.zoom({position:"bottomright"}).addTo(map);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{
+  attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:"abcd", maxZoom:19
+}).addTo(map);
+
+const markers = {}; // id -> marker
+
+function makePin(status){
+  return L.divIcon({className:"",iconSize:[16,16],iconAnchor:[8,8],
+    html:`<div class="pin ${status}"><div class="halo"></div><div class="core"></div></div>`});
+}
+
+function refreshMarkers(){
+  // remove all
+  for(const id in markers){map.removeLayer(markers[id]);delete markers[id];}
+  state.data.cities.forEach(c=>{
+    if(!state.filters[c.status]) return;
+    if(typeof c.lat!=="number"||typeof c.lng!=="number") return;
+    const m=L.marker([c.lat,c.lng],{icon:makePin(c.status)}).addTo(map);
+    m.bindTooltip(c.name,{direction:"top",offset:[0,-8],className:"la-tip"});
+    m.on("click",()=>selectCity(c.id,true));
+    markers[c.id]=m;
+  });
+}
+
+// click empty map to add a city at that point
+let pendingLatLng=null;
+map.on("click",e=>{
+  pendingLatLng={lat:+e.latlng.lat.toFixed(4), lng:+e.latlng.lng.toFixed(4)};
+  const name=prompt("在此位置新增城市，输入城市名：");
+  if(!name) {pendingLatLng=null;return;}
+  const country=prompt("国家 / 地区（可留空）：")||"";
+  addCity({name:name.trim(),country:country.trim(),lat:pendingLatLng.lat,lng:pendingLatLng.lng});
+  pendingLatLng=null;
+});
+
+/* ============================================================
+   DATA MUTATIONS
+   ============================================================ */
+function dims(){return state.data.config?.dimensions?.length?state.data.config.dimensions:DEFAULT_DIMS;}
+function otherTypes(){return state.data.config?.otherTypes?.length?state.data.config.otherTypes:DEFAULT_OTHER_TYPES;}
+function typeEmoji(label){const t=otherTypes().find(x=>x.label===label);return t?t.emoji:"•";}
+
+function newCity(p){
+  const sc={};dims().forEach(d=>sc[d]=p.scores?.[d]??5);
+  return {id:uid(),name:p.name||"未命名",country:p.country||"",lat:p.lat,lng:p.lng,
+    status:p.status||"visited",scores:sc,guide:"",attractions:"",review:"",notes:"",
+    restaurants:[],bars:[],others:[]};
+}
+function addCity(p){
+  const c=newCity(p);state.data.cities.push(c);markDirty();
+  refreshMarkers();renderList();selectCity(c.id,true);
+  if(typeof c.lat==="number") map.flyTo([c.lat,c.lng],Math.max(map.getZoom(),5),{duration:.8});
+  toast("已添加 "+c.name);
+}
+function getCity(id){return state.data.cities.find(c=>c.id===id);}
+function markDirty(){state.dirty=true;updateStatus();}
+
+/* ============================================================
+   RENDER — city list
+   ============================================================ */
+function renderList(){
+  const list=$("#cityList");const q=$("#cityFilter").value.trim().toLowerCase();
+  const cities=state.data.cities
+    .filter(c=>state.filters[c.status])
+    .filter(c=>!q || c.name.toLowerCase().includes(q) || (c.country||"").toLowerCase().includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  if(!state.loaded){
+    list.innerHTML=`<div class="empty">尚未连接数据。<br>点右上角 <b>⚙</b> 填入私有仓库与 token，<br>即可加载 / 创建 <span class="mono">life.json</span>。</div>`;
+  }else if(cities.length===0){
+    list.innerHTML=`<div class="empty">还没有城市。<br>在上方搜索城市名添加，<br>或直接点击地图任意位置打点。</div>`;
+  }else{
+    list.innerHTML=cities.map(c=>{
+      const avg=cityAvg(c);
+      return `<div class="city-row ${c.id===state.selectedId?'active':''}" data-id="${c.id}">
+        <span class="mk" style="background:${STATUS_META[c.status].color};box-shadow:0 0 8px ${STATUS_META[c.status].color}"></span>
+        <span class="nm"><b>${esc(c.name)}</b><span>${esc(c.country||STATUS_META[c.status].label)}</span></span>
+        <span class="sc">${avg!=null?avg.toFixed(1):'—'}</span>
+      </div>`;
+    }).join("");
+    list.querySelectorAll(".city-row").forEach(r=>r.onclick=()=>selectCity(r.dataset.id,true));
+  }
+  // counts
+  const t={visited:0,sojourned:0,resided:0};
+  state.data.cities.forEach(c=>t[c.status]!=null&&t[c.status]++);
+  $("#counts").innerHTML=`<span><b>${t.visited}</b> 去过</span><span><b>${t.sojourned}</b> 旅居</span><span><b>${t.resided}</b> 长居</span>`;
+}
+function cityAvg(c){
+  const ds=dims();const v=ds.map(d=>c.scores?.[d]).filter(x=>typeof x==="number");
+  return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;
+}
+
+/* ============================================================
+   RENDER — radar
+   ============================================================ */
+function radarSVG(c,size=128){
+  const ds=dims();const n=ds.length;const cx=size/2,cy=size/2,R=size/2-20;
+  const ang=i=>(-Math.PI/2)+(i*2*Math.PI/n);
+  const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
+  let grid="";
+  [.25,.5,.75,1].forEach(f=>{
+    const p=ds.map((_,i)=>pt(i,R*f).map(x=>x.toFixed(1)).join(",")).join(" ");
+    grid+=`<polygon points="${p}" fill="none" stroke="var(--line)" stroke-width="1" opacity="${f===1?.8:.4}"/>`;
+  });
+  let axes="";ds.forEach((d,i)=>{
+    const[x,y]=pt(i,R);axes+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--line)" stroke-width="1" opacity=".35"/>`;
+    const[lx,ly]=pt(i,R+11);
+    axes+=`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="var(--text-faint)" font-size="7.5" text-anchor="middle" dominant-baseline="middle" font-family="Space Grotesk">${esc(d.slice(0,4))}</text>`;
+  });
+  const poly=ds.map((d,i)=>{const v=clamp(c.scores?.[d]??0,0,10)/10;return pt(i,R*v).map(x=>x.toFixed(1)).join(",");}).join(" ");
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    ${grid}${axes}
+    <polygon points="${poly}" fill="var(--gold-soft)" stroke="var(--gold)" stroke-width="1.6"/>
+    ${ds.map((d,i)=>{const v=clamp(c.scores?.[d]??0,0,10)/10;const[x,y]=pt(i,R*v);return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.2" fill="var(--gold)"/>`;}).join("")}
+  </svg>`;
+}
+
+/* ============================================================
+   RENDER — detail
+   ============================================================ */
+function selectCity(id,fly){
+  state.selectedId=id;const c=getCity(id);
+  $("#detail").classList.add("open");renderDetail();renderList();
+  if(fly&&c&&typeof c.lat==="number") map.panTo([c.lat,c.lng],{animate:true});
+}
+function closeDetail(){state.selectedId=null;$("#detail").classList.remove("open");renderList();}
+
+function renderDetail(){
+  const c=getCity(state.selectedId);if(!c)return;
+  const ds=dims();const avg=cityAvg(c);
+  const body=$("#detailBody");
+  body.innerHTML=`
+    <div class="detail-hero">
+      <button class="btn btn-icon ghost close" id="closeDetail">✕</button>
+      <div class="country">${esc(c.country||"—")}</div>
+      <h1 class="serif" contenteditable="true" id="edName">${esc(c.name)}</h1>
+      <div class="coords mono">${typeof c.lat==="number"?c.lat.toFixed(3)+", "+c.lng.toFixed(3):"无坐标"}</div>
+      <div class="seg" id="segStatus">
+        ${Object.keys(STATUS_META).map(s=>`<button data-s="${s}" class="${c.status===s?'on':''}">${STATUS_META[s].label}</button>`).join("")}
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>城市评分 <span class="avg">${avg!=null?avg.toFixed(1)+" / 10":""}</span></h3>
+      <div class="score-grid">
+        <div class="radar-box" id="radarBox">${radarSVG(c)}</div>
+        <div class="scores">
+          ${ds.map(d=>{const v=c.scores?.[d]??0;return `
+            <div class="score-item">
+              <span class="lab" title="${esc(d)}">${esc(d)}</span>
+              <input type="range" min="0" max="10" step="0.5" value="${v}" data-dim="${esc(d)}" style="--p:${v*10}%">
+              <span class="val" data-valfor="${esc(d)}">${(+v).toFixed(1)}</span>
+            </div>`;}).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="section txt-stack">
+      <h3>攻略 · 必去 · 评价</h3>
+      <div class="field"><label>必去景点</label><textarea id="edAttr" placeholder="清单 / 标志性地点…">${esc(c.attractions)}</textarea></div>
+      <div class="field"><label>攻略 / 实用 tips</label><textarea id="edGuide" placeholder="交通、签证、住宿、避坑…">${esc(c.guide)}</textarea></div>
+      <div class="field"><label>评价</label><textarea id="edReview" placeholder="整体感受…">${esc(c.review)}</textarea></div>
+      <div class="field"><label>备注</label><textarea id="edNotes" placeholder="其他备注…">${esc(c.notes)}</textarea></div>
+    </div>
+
+    <div class="section">
+      <h3>餐厅 <span class="avg">${c.restaurants.length} 家</span></h3>
+      <div class="list-add">
+        <input id="addRest" placeholder="餐厅名，回车添加" />
+        <button class="btn" id="addRestBtn">+ 加</button>
+      </div>
+      <div id="restList">${c.restaurants.map(r=>entryHTML(r,"rest")).join("")}</div>
+    </div>
+
+    <div class="section">
+      <h3>Bar <span class="avg">${c.bars.length} 家</span></h3>
+      <div class="list-add">
+        <input id="addBar" placeholder="Bar 名，回车添加" />
+        <button class="btn" id="addBarBtn">+ 加</button>
+      </div>
+      <div id="barList">${c.bars.map(b=>barHTML(b)).join("")}</div>
+    </div>
+
+    <div class="section">
+      <h3>其他店铺 <span class="avg">${c.others.length} 家</span></h3>
+      <div class="list-add">
+        <select id="addOtherType">${otherTypes().map(t=>`<option value="${esc(t.label)}">${t.emoji} ${esc(t.label)}</option>`).join("")}</select>
+        <input id="addOther" placeholder="店名，回车添加" />
+        <button class="btn" id="addOtherBtn">+ 加</button>
+      </div>
+      <div id="otherList">${c.others.map(o=>otherHTML(o)).join("")}</div>
+    </div>
+
+    <div class="section">
+      <button class="btn ghost" id="delCity" style="color:var(--coral);border-color:var(--coral)">删除该城市</button>
+    </div>
+  `;
+  wireDetail(c);
+}
+
+function entryHTML(r,kind){
+  return `<div class="entry" data-eid="${r.id}" data-kind="${kind}">
+    <div class="entry-top">
+      <span class="nm" contenteditable="true" data-f="name">${esc(r.name)}</span>
+      <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${r.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
+      <button class="del" data-del="1">✕</button>
+    </div>
+    <div class="note"><input type="text" value="${esc(r.note||"")}" data-f="note" placeholder="一句话备注…"></div>
+  </div>`;
+}
+function barHTML(b){
+  return `<div class="entry" data-eid="${b.id}" data-kind="bar">
+    <div class="entry-top">
+      <span class="nm" contenteditable="true" data-f="name">${esc(b.name)}</span>
+      <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${b.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
+      <button class="del" data-del="1">✕</button>
+    </div>
+    <div class="note"><input type="text" value="${esc(b.note||"")}" data-f="note" placeholder="一句话备注…"></div>
+    <div class="cocktail-hint">喝过的 cocktail（点击循环：默认 → <b>喜欢</b> → <i>特别喜欢</i>）</div>
+    <div class="chips" data-chips>
+      ${(b.cocktails||[]).map(ck=>chipHTML(ck)).join("")}
+    </div>
+    <div class="list-add"><input data-addck placeholder="cocktail 名，回车添加" style="font-size:12px"></div>
+  </div>`;
+}
+function otherHTML(o){
+  const opts=otherTypes().map(t=>`<option value="${esc(t.label)}" ${t.label===o.type?'selected':''}>${t.emoji} ${esc(t.label)}</option>`).join("");
+  return `<div class="entry" data-eid="${o.id}" data-kind="other">
+    <div class="entry-top">
+      <select class="type-sel" data-f="type">${opts}</select>
+      <span class="nm" contenteditable="true" data-f="name">${esc(o.name)}</span>
+      <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${o.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
+      <button class="del" data-del="1">✕</button>
+    </div>
+    <div class="note"><input type="text" value="${esc(o.note||"")}" data-f="note" placeholder="一句话备注…"></div>
+  </div>`;
+}
+function chipHTML(ck){
+  const star=ck.level==="loved"?"★":(ck.level==="liked"?"☆":"");
+  return `<span class="chip" data-lvl="${ck.level}" data-ckid="${ck.id}">
+    ${star?`<span class="star">${star}</span>`:""}${esc(ck.name)}<span class="x" data-ckdel="1">✕</span></span>`;
+}
+
+/* ---------- detail wiring ---------- */
+function wireDetail(c){
+  $("#closeDetail").onclick=closeDetail;
+  $("#edName").addEventListener("blur",e=>{c.name=e.target.textContent.trim()||"未命名";markDirty();renderList();refreshMarkers();});
+  // status
+  $("#segStatus").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    c.status=b.dataset.s;markDirty();renderDetail();renderList();refreshMarkers();
+  });
+  // scores
+  $("#radarBox").parentElement.querySelectorAll('input[type=range]').forEach(inp=>{
+    inp.addEventListener("input",e=>{
+      const d=e.target.dataset.dim;const v=parseFloat(e.target.value);
+      c.scores[d]=v;e.target.style.setProperty("--p",(v*10)+"%");
+      $(`[data-valfor="${CSS.escape(d)}"]`).textContent=v.toFixed(1);
+      $("#radarBox").innerHTML=radarSVG(c);
+      $(".section .avg").textContent=(cityAvg(c)).toFixed(1)+" / 10";
+      markDirty();
+    });
+    inp.addEventListener("change",()=>renderList());
+  });
+  // textareas
+  [["edAttr","attractions"],["edGuide","guide"],["edReview","review"],["edNotes","notes"]].forEach(([id,f])=>{
+    $("#"+id).addEventListener("input",e=>{c[f]=e.target.value;markDirty();});
+  });
+  // restaurants
+  const addRest=()=>{const v=$("#addRest").value.trim();if(!v)return;
+    c.restaurants.push({id:uid(),name:v,rating:null,note:""});$("#addRest").value="";markDirty();renderDetail();};
+  $("#addRestBtn").onclick=addRest;
+  $("#addRest").addEventListener("keydown",e=>{if(e.key==="Enter")addRest();});
+  // bars
+  const addBar=()=>{const v=$("#addBar").value.trim();if(!v)return;
+    c.bars.push({id:uid(),name:v,rating:null,note:"",cocktails:[]});$("#addBar").value="";markDirty();renderDetail();};
+  $("#addBarBtn").onclick=addBar;
+  $("#addBar").addEventListener("keydown",e=>{if(e.key==="Enter")addBar();});
+  // others (combined)
+  const addOther=()=>{const v=$("#addOther").value.trim();if(!v)return;
+    const type=$("#addOtherType").value||(otherTypes()[0]&&otherTypes()[0].label)||"其他";
+    c.others.push({id:uid(),name:v,type,rating:null,note:""});$("#addOther").value="";markDirty();renderDetail();};
+  $("#addOtherBtn").onclick=addOther;
+  $("#addOther").addEventListener("keydown",e=>{if(e.key==="Enter")addOther();});
+  // entry edits (restaurant + bar + other shared)
+  $("#detailBody").querySelectorAll(".entry").forEach(el=>{
+    const kind=el.dataset.kind,eid=el.dataset.eid;
+    const arr=kind==="bar"?c.bars:(kind==="other"?c.others:c.restaurants);
+    const obj=arr.find(x=>x.id===eid);if(!obj)return;
+    el.querySelector('[data-f="name"]').addEventListener("blur",e=>{obj.name=e.target.textContent.trim();markDirty();});
+    const rIn=el.querySelector('[data-f="rating"]');
+    rIn.addEventListener("input",e=>{obj.rating=e.target.value===""?null:clamp(parseFloat(e.target.value)||0,0,10);markDirty();});
+    el.querySelector('[data-f="note"]').addEventListener("input",e=>{obj.note=e.target.value;markDirty();});
+    const typeSel=el.querySelector('[data-f="type"]');
+    if(typeSel) typeSel.addEventListener("change",e=>{obj.type=e.target.value;markDirty();});
+    el.querySelector('[data-del="1"]').onclick=()=>{
+      const i=arr.findIndex(x=>x.id===eid);arr.splice(i,1);markDirty();renderDetail();
+    };
+    if(kind==="bar"){
+      const addCk=()=>{const inp=el.querySelector("[data-addck]");const v=inp.value.trim();if(!v)return;
+        obj.cocktails=obj.cocktails||[];obj.cocktails.push({id:uid(),name:v,level:"tried"});inp.value="";markDirty();renderDetail();};
+      el.querySelector("[data-addck]").addEventListener("keydown",e=>{if(e.key==="Enter")addCk();});
+      el.querySelectorAll(".chip").forEach(chip=>{
+        const ckid=chip.dataset.ckid;const ck=obj.cocktails.find(x=>x.id===ckid);
+        chip.addEventListener("click",e=>{
+          if(e.target.dataset.ckdel){const i=obj.cocktails.findIndex(x=>x.id===ckid);obj.cocktails.splice(i,1);markDirty();renderDetail();return;}
+          const cur=COCKTAIL_LEVELS.indexOf(ck.level);ck.level=COCKTAIL_LEVELS[(cur+1)%3];markDirty();
+          renderDetail();
+        });
+      });
+    }
+  });
+  $("#delCity").onclick=()=>{
+    if(!confirm("确定删除 "+c.name+"？此操作需保存后才会写入 GitHub。"))return;
+    state.data.cities=state.data.cities.filter(x=>x.id!==c.id);markDirty();closeDetail();refreshMarkers();renderList();
+  };
+}
+
+/* ============================================================
+   GEOCODING (OpenStreetMap Nominatim)
+   ============================================================ */
+let geoTimer=null;
+$("#cityFilter").addEventListener("input",()=>{
+  renderList();
+  clearTimeout(geoTimer);
+  const q=$("#cityFilter").value.trim();
+  if(q.length<2){$("#geoResults").style.display="none";return;}
+  geoTimer=setTimeout(()=>geocode(q),420);
+});
+async function geocode(q){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=zh&q=${encodeURIComponent(q)}`,
+      {headers:{"Accept":"application/json"}});
+    const arr=await r.json();
+    const box=$("#geoResults");
+    if(!arr.length){box.style.display="none";return;}
+    box.innerHTML=arr.map((p,i)=>`<div data-i="${i}">${esc(p.display_name)}</div>`).join("");
+    box.style.display="block";
+    box.querySelectorAll("div").forEach(d=>d.onclick=()=>{
+      const p=arr[d.dataset.i];const parts=p.display_name.split(",");
+      addCity({name:parts[0].trim(),country:(parts[parts.length-1]||"").trim(),
+        lat:+(+p.lat).toFixed(4),lng:+(+p.lon).toFixed(4)});
+      box.style.display="none";$("#cityFilter").value="";renderList();
+    });
+  }catch(e){$("#geoResults").style.display="none";}
+}
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".search-wrap")) $("#geoResults").style.display="none";
+});
+
+/* ============================================================
+   GITHUB API
+   ============================================================ */
+function api(path,opts={}){
+  const s=state.settings;
+  return fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/${path}`,{
+    ...opts,
+    headers:{
+      "Authorization":"Bearer "+s.token,
+      "Accept":"application/vnd.github+json",
+      "X-GitHub-Api-Version":"2022-11-28",
+      ...(opts.headers||{})
+    }
+  });
+}
+
+async function loadData(){
+  setStatus("busy","加载中…");
+  try{
+    const r=await api(`contents/${encodeURIComponent(state.settings.path)}`);
+    if(r.status===404){
+      // file doesn't exist yet — start fresh, keep configured dims
+      state.sha=null;state.data={version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(c=>({...c}))},cities:[]};
+      mergeDimsFromSettings();
+      state.loaded=true;state.dirty=false;
+      finalizeLoad();toast("未找到 life.json，将在首次保存时创建");
+      return;
+    }
+    if(r.status===401||r.status===403){throw new Error("Token 无权限或无效（需 Contents: Read & write）");}
+    if(!r.ok){throw new Error("HTTP "+r.status);}
+    const j=await r.json();
+    state.sha=j.sha;
+    const txt=b64decode(j.content);
+    const parsed=JSON.parse(txt);
+    state.data=normalize(parsed);
+    state.loaded=true;state.dirty=false;
+    finalizeLoad();
+    toast("已加载 "+state.data.cities.length+" 个城市");
+  }catch(e){
+    setStatus("","连接失败");
+    toast("加载失败："+e.message,true);
+  }
+}
+function mergeDimsFromSettings(){
+  // settings modal may have edited dims; apply if present
+  const edited=collectDimsFromModal();
+  if(edited && edited.length){state.data.config.dimensions=edited;}
+}
+function normalize(p){
+  const d={version:1,config:{dimensions:DEFAULT_DIMS.slice(),otherTypes:DEFAULT_OTHER_TYPES.map(c=>({...c}))},cities:[]};
+  if(p&&typeof p==="object"){
+    if(p.config?.dimensions?.length) d.config.dimensions=p.config.dimensions;
+    if(p.config?.otherTypes?.length) d.config.otherTypes=p.config.otherTypes.map(t=>({label:t.label||"",emoji:t.emoji||"•"})).filter(t=>t.label);
+    if(Array.isArray(p.cities)) d.cities=p.cities.map(c=>({
+      id:c.id||uid(),name:c.name||"未命名",country:c.country||"",
+      lat:typeof c.lat==="number"?c.lat:undefined,lng:typeof c.lng==="number"?c.lng:undefined,
+      status:STATUS_META[c.status]?c.status:"visited",
+      scores:c.scores||{},guide:c.guide||"",attractions:c.attractions||"",
+      review:c.review||"",notes:c.notes||"",
+      restaurants:(c.restaurants||[]).map(r=>({id:r.id||uid(),name:r.name||"",rating:r.rating??null,note:r.note||""})),
+      bars:(c.bars||[]).map(b=>({id:b.id||uid(),name:b.name||"",rating:b.rating??null,note:b.note||"",
+        cocktails:(b.cocktails||[]).map(k=>({id:k.id||uid(),name:k.name||"",level:COCKTAIL_LEVELS.includes(k.level)?k.level:"tried"}))})),
+      others:(c.others||[]).map(o=>({id:o.id||uid(),name:o.name||"",type:o.type||"其他",rating:o.rating??null,note:o.note||""}))
+    }));
+  }
+  // ensure every city has all current dims
+  d.cities.forEach(c=>d.config.dimensions.forEach(dim=>{if(typeof c.scores[dim]!=="number")c.scores[dim]=5;}));
+  return d;
+}
+
+async function saveData(){
+  if(!state.loaded){toast("请先连接数据",true);return;}
+  setStatus("busy","保存中…");
+  try{
+    const content=b64encode(JSON.stringify(state.data,null,2));
+    const body={message:`update life.json · ${new Date().toISOString()}`,content};
+    if(state.sha) body.sha=state.sha;
+    const r=await api(`contents/${encodeURIComponent(state.settings.path)}`,{
+      method:"PUT",body:JSON.stringify(body)
+    });
+    if(r.status===409){throw new Error("版本冲突，请刷新后重试（远端已更新）");}
+    if(!r.ok){const t=await r.text();throw new Error("HTTP "+r.status+" "+t.slice(0,80));}
+    const j=await r.json();
+    state.sha=j.content.sha;state.dirty=false;
+    updateStatus();toast("已保存到 GitHub ✓");
+  }catch(e){
+    updateStatus();toast("保存失败："+e.message,true);
+  }
+}
+
+function finalizeLoad(){
+  refreshMarkers();renderList();
+  if(state.selectedId&&getCity(state.selectedId))renderDetail();else closeDetail();
+  $("#saveBtn").disabled=false;
+  updateStatus();
+  // fit to markers
+  const pts=state.data.cities.filter(c=>typeof c.lat==="number").map(c=>[c.lat,c.lng]);
+  if(pts.length) map.fitBounds(pts,{padding:[80,80],maxZoom:6});
+}
+
+/* ============================================================
+   STATUS PILL
+   ============================================================ */
+function setStatus(cls,txt){const p=$("#statusPill");p.className="status-pill"+(cls?" "+cls:"");$("#statusTxt").textContent=txt;}
+function updateStatus(){
+  if(!state.loaded){setStatus("","未连接");$("#saveBtn").disabled=true;return;}
+  if(state.dirty){setStatus("dirty","有未保存改动");$("#saveBtn").disabled=false;}
+  else{setStatus("ok","已同步");$("#saveBtn").disabled=false;}
+}
+
+/* ============================================================
+   LEGEND FILTERS
+   ============================================================ */
+$("#legend").querySelectorAll(".item").forEach(it=>it.onclick=()=>{
+  const f=it.dataset.f;state.filters[f]=!state.filters[f];
+  it.classList.toggle("off",!state.filters[f]);
+  refreshMarkers();renderList();
+});
+
+/* ============================================================
+   SETTINGS MODAL
+   ============================================================ */
+function openSettings(){
+  $("#setOwner").value=state.settings.owner;
+  $("#setRepo").value=state.settings.repo;
+  $("#setPath").value=state.settings.path||"life.json";
+  $("#setToken").value=state.settings.token;
+  renderDimsEdit(state.data.config?.dimensions?.length?state.data.config.dimensions:DEFAULT_DIMS);
+  renderOtypesEdit(otherTypes());
+  $("#setWarn").className="warn";
+  $("#overlay").classList.add("open");
+}
+function renderDimsEdit(arr){
+  $("#dimsEdit").innerHTML=arr.map(d=>dimRow(d)).join("");
+  wireDimRows();
+}
+function dimRow(v){return `<div class="row"><input value="${esc(v)}" data-dim-input><button class="del" data-dim-del>✕</button></div>`;}
+function wireDimRows(){
+  $("#dimsEdit").querySelectorAll("[data-dim-del]").forEach(b=>b.onclick=()=>{
+    const rows=$("#dimsEdit").querySelectorAll(".row");
+    if(rows.length<=4){toast("至少保留 4 个维度",true);return;}
+    b.closest(".row").remove();
+  });
+}
+function collectDimsFromModal(){
+  const inputs=$("#dimsEdit")?.querySelectorAll("[data-dim-input]");
+  if(!inputs)return null;
+  const arr=[...inputs].map(i=>i.value.trim()).filter(Boolean);
+  return arr;
+}
+$("#addDim").onclick=()=>{
+  const rows=$("#dimsEdit").querySelectorAll(".row");
+  if(rows.length>=6){toast("最多 6 个维度",true);return;}
+  $("#dimsEdit").insertAdjacentHTML("beforeend",dimRow(""));wireDimRows();
+};
+
+// ---- other types editor ----
+function renderOtypesEdit(arr){
+  $("#otypesEdit").innerHTML=arr.map(t=>otypeRow(t)).join("");
+  wireOtypeRows();
+}
+function otypeRow(t){
+  return `<div class="row"><input class="emoji" maxlength="4" value="${esc(t.emoji||"")}" data-otype-emoji placeholder="🙂"><input value="${esc(t.label||"")}" data-otype-label placeholder="类型名"><button class="del" data-otype-del>✕</button></div>`;
+}
+function wireOtypeRows(){
+  $("#otypesEdit").querySelectorAll("[data-otype-del]").forEach(b=>b.onclick=()=>{
+    const rows=$("#otypesEdit").querySelectorAll(".row");
+    if(rows.length<=1){toast("至少保留 1 个类型",true);return;}
+    b.closest(".row").remove();
+  });
+}
+function collectOtypesFromModal(){
+  const rows=$("#otypesEdit")?.querySelectorAll(".row");
+  if(!rows)return null;
+  return [...rows].map(r=>({
+    emoji:(r.querySelector("[data-otype-emoji]").value.trim())||"•",
+    label:r.querySelector("[data-otype-label]").value.trim()
+  })).filter(t=>t.label);
+}
+$("#addOtype").onclick=()=>{
+  $("#otypesEdit").insertAdjacentHTML("beforeend",otypeRow({emoji:"",label:""}));wireOtypeRows();
+};
+$("#settingsBtn").onclick=openSettings;
+$("#cancelSet").onclick=()=>$("#overlay").classList.remove("open");
+$("#overlay").addEventListener("click",e=>{if(e.target.id==="overlay")$("#overlay").classList.remove("open");});
+
+$("#connectBtn").onclick=async()=>{
+  const owner=$("#setOwner").value.trim(),repo=$("#setRepo").value.trim(),
+        path=$("#setPath").value.trim()||"life.json",token=$("#setToken").value.trim();
+  if(!owner||!repo||!token){$("#setWarn").textContent="请填写 owner、repo 和 token。";$("#setWarn").className="warn show";return;}
+  const newDims=collectDimsFromModal();
+  if(newDims.length<4||newDims.length>6){$("#setWarn").textContent="维度数量需在 4–6 之间。";$("#setWarn").className="warn show";return;}
+  const newOtypes=collectOtypesFromModal();
+  if(!newOtypes||newOtypes.length<1){$("#setWarn").textContent="至少保留 1 个「其他店铺」类型。";$("#setWarn").className="warn show";return;}
+  state.settings={owner,repo,path,token};
+  save("la_settings",state.settings);
+  // stash desired config so loadData can apply when creating fresh
+  state._pendingDims=newDims;
+  state._pendingOtypes=newOtypes;
+  $("#overlay").classList.remove("open");
+  await loadData();
+  applyDimChangeIfNeeded(newDims);
+  applyOtypeChange(newOtypes);
+};
+function applyOtypeChange(newOtypes){
+  if(!state.loaded)return;
+  const cur=state.data.config.otherTypes||[];
+  const same=JSON.stringify(cur)===JSON.stringify(newOtypes);
+  if(same)return;
+  state.data.config.otherTypes=newOtypes;markDirty();
+  if(state.selectedId)renderDetail();
+}
+function applyDimChangeIfNeeded(newDims){
+  if(!state.loaded)return;
+  const cur=state.data.config.dimensions;
+  const same=cur.length===newDims.length&&cur.every((d,i)=>d===newDims[i]);
+  if(same)return;
+  if(confirm("检测到评分维度有改动。是否应用新的维度集合？\n（已有城市会保留同名维度的分数，新维度默认 5）")){
+    state.data.config.dimensions=newDims;
+    state.data.cities.forEach(c=>{
+      const ns={};newDims.forEach(d=>ns[d]=typeof c.scores[d]==="number"?c.scores[d]:5);c.scores=ns;
+    });
+    markDirty();renderList();if(state.selectedId)renderDetail();
+  }
+}
+
+/* override mergeDimsFromSettings to use pending dims */
+function collectPending(){return state._pendingDims||null;}
+const _origMerge=mergeDimsFromSettings;
+mergeDimsFromSettings=function(){
+  const p=collectPending();
+  if(p&&p.length){state.data.config.dimensions=p;
+    state.data.cities.forEach(c=>p.forEach(d=>{if(typeof c.scores[d]!=="number")c.scores[d]=5;}));}
+  const po=state._pendingOtypes;
+  if(po&&po.length){state.data.config.otherTypes=po;}
+};
+
+/* ============================================================
+   SAVE BUTTON + shortcuts + init
+   ============================================================ */
+$("#saveBtn").onclick=saveData;
+document.addEventListener("keydown",e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==="s"){e.preventDefault();if(!$("#saveBtn").disabled)saveData();}
+});
+window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.returnValue="";}});
+
+// boot
+renderList();updateStatus();
+if(state.settings.owner&&state.settings.repo&&state.settings.token){
+  state._pendingDims=null;loadData();
+}else{
+  setTimeout(openSettings,400);
+}
+</script>
+</body>
+</html>
