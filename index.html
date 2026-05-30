@@ -381,7 +381,9 @@ function pipPoly(pt,rings){let c=false;for(const r of rings)if(pipRing(pt,r))c=!
 function geomContains(pt,geom){if(geom.type==="Polygon")return pipPoly(pt,geom.coordinates);if(geom.type==="MultiPolygon")return geom.coordinates.some(p=>pipPoly(pt,p));return false}
 /* 中国 → 省(admin-1)；其他国家 → 整国(admin-0) */
 function countryIdByName(nm){const f=state.regions.features.find(f=>f.properties.level===0&&(f.properties.admin===nm||f.properties.name===nm));return f?f.properties.id:null}
-function countryIdByPoint(pt){for(const f of state.regions.features){if(f.properties.level!==0)continue;if(geomContains(pt,f.geometry))return f.properties.id}return null}
+function bboxArea(geom){let mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;const scan=c=>{if(typeof c[0]==="number"){if(c[0]<mnx)mnx=c[0];if(c[0]>mxx)mxx=c[0];if(c[1]<mny)mny=c[1];if(c[1]>mxy)mxy=c[1];}else c.forEach(scan)};scan(geom.coordinates);return (mxx-mnx)*(mxy-mny)}
+function smallestCountryAt(pt){let best=null,ba=Infinity;for(const f of state.regions.features){if(f.properties.level!==0)continue;if(geomContains(pt,f.geometry)){const a=bboxArea(f.geometry);if(a<ba){ba=a;best=f}}}return best?best.properties.id:null}
+function isChinaCountry(id){const f=state.regions.features.find(x=>x.properties.id===id);return f&&f.properties.level===0&&(f.properties.name==="China"||f.properties.admin==="China")}
 function cityRegionId(c){
   if(!state.regions||typeof c.lat!=="number")return null;
   if(state.cityRegion[c.id]!==undefined)return state.cityRegion[c.id];
@@ -389,11 +391,12 @@ function cityRegionId(c){
   let prov=null;
   for(const f of state.regions.features){if(f.properties.level!==1)continue;if(geomContains(pt,f.geometry)){prov=f;break}}
   let id=null;
-  if(prov){
-    if(prov.properties.admin==="China") id=prov.properties.id;                 // 中国 → 省
-    else id=countryIdByName(prov.properties.admin)||countryIdByPoint(pt)||prov.properties.id; // 其他 → 整国
-  } else {
-    id=countryIdByPoint(pt);                                                   // 无省级数据 → 按点找国家
+  if(prov && prov.properties.admin==="China"){ id=prov.properties.id; }            // 中国 → 省（含港澳）
+  else {
+    const cid=smallestCountryAt(pt);                                               // 包含该点的最小国家（梵蒂冈优先于意大利）
+    if(cid && !isChinaCountry(cid)) id=cid;                                        // 普通国家 → 整国
+    else if(!cid && prov) id=countryIdByName(prov.properties.admin);              // 海岸漏匹配 → 用省所属国名兜底
+    // 若落在中国国界但没匹配到省（沿海简化误差）→ id 保持 null，只显示单点（该省已被内陆城市点亮）
   }
   state.cityRegion[c.id]=id;return id;
 }
