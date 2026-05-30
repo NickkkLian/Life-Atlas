@@ -191,9 +191,66 @@ label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase
 .entry .note input{font-size:12px;padding:6px 9px;color:var(--text-dim)}
 .del{background:transparent;border:0;color:var(--text-faint);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px;border-radius:6px}
 .del:hover{color:var(--coral);background:var(--coral-soft)}
+.badge-unrated{flex:none;font-size:10px;letter-spacing:.5px;color:var(--gold);
+  background:var(--gold-soft);border:1px solid rgba(227,179,65,.4);border-radius:20px;padding:1px 8px;white-space:nowrap}
+.entry.unrated{border-left:2px solid var(--gold)}
+
+/* leaderboard */
+.lb-modal{width:min(620px,94vw);max-height:90vh;display:flex;flex-direction:column;padding:22px 24px}
+.lb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.lb-head h2{font-size:22px}
+.lb-controls{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.lb-seg{display:flex;gap:0;margin:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex:none}
+.lb-seg button{border:0;border-radius:0;background:#0c1119;color:var(--text-dim);padding:8px 16px;font-size:13px;cursor:pointer;transition:.15s}
+.lb-seg button:not(:last-child){border-right:1px solid var(--line)}
+.lb-seg button.on{background:var(--gold-soft);color:var(--gold);font-weight:600}
+.lb-body{overflow-y:auto;flex:1;margin:0 -4px;padding:0 4px}
+.lb-region-head{display:flex;align-items:center;gap:9px;font-family:"Fraunces",serif;font-size:16px;
+  margin:18px 2px 10px;padding-bottom:7px;border-bottom:1px solid var(--line-soft)}
+.lb-region-head:first-child{margin-top:0}
+.lb-region-head .mk{width:9px;height:9px;border-radius:50%}
+.lb-region-head .cnt{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--text-faint);font-weight:400}
+.lb-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:9px;transition:.12s}
+.lb-row:hover{background:#161e29}
+.lb-row+.lb-row{border-top:1px solid var(--line-soft)}
+.lb-rank{flex:none;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600;color:var(--text-faint);background:#0c1119;border:1px solid var(--line)}
+.lb-rank.r1{background:linear-gradient(135deg,#f5d06b,#d99a2b);color:#3a2a06;border-color:#e3b341;box-shadow:0 0 14px -3px var(--gold)}
+.lb-rank.r2{background:linear-gradient(135deg,#dfe6ee,#9fb0c2);color:#1c2531;border-color:#cdd6e0}
+.lb-rank.r3{background:linear-gradient(135deg,#e0a479,#bd7842);color:#2a1605;border-color:#cf935f}
+.lb-name{flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-city{flex:none;font-size:11px;color:var(--text-faint);background:#0c1119;border:1px solid var(--line-soft);
+  border-radius:20px;padding:2px 9px}
+.lb-score{flex:none;font-family:"JetBrains Mono",monospace;font-size:15px;font-weight:600;color:var(--gold);width:40px;text-align:right}
+.lb-empty{text-align:center;color:var(--text-faint);font-size:13px;padding:50px 20px;line-height:1.8}
 .type-sel{width:auto;flex:none;padding:5px 6px;font-size:12px;background:#10161e;border-radius:7px;max-width:108px}
 .list-add select{width:auto;flex:none;max-width:120px;padding:8px 8px;font-size:12px}
 .dims-edit .emoji{flex:none;width:52px;text-align:center;padding:8px 4px}
+
+/* add-city hint + geocode dropdown */
+.add-hint{font-size:11px;color:var(--text-faint);line-height:1.6;margin-top:9px}
+.geo-cap{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-faint);
+  padding:8px 12px 6px;border-bottom:1px solid var(--line-soft);background:#171f2a;cursor:default}
+.geo-item{display:flex;align-items:center;gap:10px}
+.geo-item .plus{color:var(--gold);font-weight:600;flex:none}
+.geo-item .gtxt{min-width:0}
+.geo-item .gtxt b{display:block;font-size:13px;color:var(--text);font-weight:600}
+.geo-item .gtxt i{font-style:normal;font-size:11px;color:var(--text-faint);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* other-venues collapsible groups */
+.ogroup{border:1px solid var(--line-soft);border-radius:11px;margin-bottom:10px;overflow:hidden;background:#0b1018}
+.ogroup-head{display:flex;align-items:center;gap:9px;padding:10px 13px;cursor:pointer;user-select:none;
+  background:#121925;transition:.14s}
+.ogroup-head:hover{background:#161f2c}
+.ogroup-head .chev{font-size:11px;color:var(--text-faint);transition:transform .18s}
+.ogroup-head.collapsed .chev{transform:rotate(-90deg)}
+.ogroup-emoji{font-size:15px;flex:none}
+.ogroup-label{flex:1;font-size:13px;font-weight:600}
+.ogroup-count{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--text-faint);
+  background:#0b1018;border:1px solid var(--line);border-radius:20px;padding:1px 9px}
+.ogroup-body{padding:11px 11px 3px}
+.ogroup-body .entry{background:#0e141d}
+.ogroup-body .entry:last-child{margin-bottom:8px}
 
 /* cocktails */
 .cocktail-hint{font-size:11px;color:var(--text-faint);margin:10px 0 8px;line-height:1.6}
@@ -206,6 +263,9 @@ label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase
 .chip .x{color:var(--text-faint);font-size:13px}
 .chip .x:hover{color:var(--coral)}
 .chip .star{font-size:10px;opacity:.85}
+.chip.food{border-style:dashed}
+.chip.food .fork{font-size:10px;opacity:.9;filter:grayscale(.2)}
+.chip.food[data-lvl="tried"]{background:#13182093;border-color:var(--line);color:var(--text-faint)}
 
 /* notes section */
 .txt-stack .field:last-child{margin-bottom:0}
@@ -267,6 +327,7 @@ label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase
       <div class="item" data-f="resided"><span class="dot resided"></span>长居</div>
     </div>
     <div class="status-pill" id="statusPill"><span class="led"></span><span id="statusTxt">未连接</span></div>
+    <button class="btn ghost" id="lbBtn" title="排行榜">🏆 排行榜</button>
     <button class="btn primary" id="saveBtn" disabled>保存到 GitHub</button>
     <button class="btn btn-icon ghost" id="settingsBtn" title="设置">⚙</button>
   </div>
@@ -278,9 +339,10 @@ label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase
     <div class="panel-head">
       <h2 class="serif">我的城市</h2>
       <div class="search-wrap">
-        <input id="cityFilter" placeholder="筛选 / 搜索城市以添加…" autocomplete="off" />
+        <input id="cityFilter" placeholder="输入城市名搜索…" autocomplete="off" />
         <div class="geo-results" id="geoResults" style="display:none"></div>
       </div>
+      <div class="add-hint">已记录的城市会即时筛选；想新增就直接打城市名，从下拉里点一下，自动定位并点亮。</div>
     </div>
     <div class="city-list" id="cityList"></div>
     <div class="rail-foot">
@@ -328,6 +390,28 @@ label{display:block;font-size:11px;letter-spacing:1.4px;text-transform:uppercase
   </div>
 </div>
 
+<!-- leaderboard modal -->
+<div class="overlay" id="lbOverlay">
+  <div class="modal lb-modal">
+    <div class="lb-head">
+      <h2 class="serif">🏆 排行榜</h2>
+      <button class="btn btn-icon ghost" id="lbClose">✕</button>
+    </div>
+    <div class="lb-controls">
+      <div class="seg lb-seg" id="lbType">
+        <button data-t="restaurant" class="on">餐厅</button>
+        <button data-t="bar">Bar</button>
+      </div>
+      <div class="seg lb-seg" id="lbScope">
+        <button data-s="total" class="on">总榜</button>
+        <button data-s="region">分地区</button>
+      </div>
+      <select id="lbCity" style="display:none;max-width:170px"></select>
+    </div>
+    <div class="lb-body" id="lbBody"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -361,6 +445,7 @@ const state = {
   sha: null,
   selectedId: null,
   filters: {visited:true, sojourned:true, resided:true},
+  collapsedGroups: new Set(),
   dirty: false,
   loaded: false
 };
@@ -421,16 +506,7 @@ function refreshMarkers(){
   });
 }
 
-// click empty map to add a city at that point
-let pendingLatLng=null;
-map.on("click",e=>{
-  pendingLatLng={lat:+e.latlng.lat.toFixed(4), lng:+e.latlng.lng.toFixed(4)};
-  const name=prompt("在此位置新增城市，输入城市名：");
-  if(!name) {pendingLatLng=null;return;}
-  const country=prompt("国家 / 地区（可留空）：")||"";
-  addCity({name:name.trim(),country:country.trim(),lat:pendingLatLng.lat,lng:pendingLatLng.lng});
-  pendingLatLng=null;
-});
+// 城市统一通过「搜索城市名」添加并自动定位，不再用点击地图任意坐标的方式。
 
 /* ============================================================
    DATA MUTATIONS
@@ -466,7 +542,7 @@ function renderList(){
   if(!state.loaded){
     list.innerHTML=`<div class="empty">尚未连接数据。<br>点右上角 <b>⚙</b> 填入私有仓库与 token，<br>即可加载 / 创建 <span class="mono">life.json</span>。</div>`;
   }else if(cities.length===0){
-    list.innerHTML=`<div class="empty">还没有城市。<br>在上方搜索城市名添加，<br>或直接点击地图任意位置打点。</div>`;
+    list.innerHTML=`<div class="empty">还没有城市。<br>在上方输入城市名，<br>从下拉里点一下即可添加并自动定位。</div>`;
   }else{
     list.innerHTML=cities.map(c=>{
       const avg=cityAvg(c);
@@ -562,7 +638,7 @@ function renderDetail(){
     </div>
 
     <div class="section">
-      <h3>餐厅 <span class="avg">${c.restaurants.length} 家</span></h3>
+      <h3>餐厅 <span class="avg">${c.restaurants.length} 家${unratedCount(c.restaurants)}</span></h3>
       <div class="list-add">
         <input id="addRest" placeholder="餐厅名，回车添加" />
         <button class="btn" id="addRestBtn">+ 加</button>
@@ -571,7 +647,7 @@ function renderDetail(){
     </div>
 
     <div class="section">
-      <h3>Bar <span class="avg">${c.bars.length} 家</span></h3>
+      <h3>Bar <span class="avg">${c.bars.length} 家${unratedCount(c.bars)}</span></h3>
       <div class="list-add">
         <input id="addBar" placeholder="Bar 名，回车添加" />
         <button class="btn" id="addBarBtn">+ 加</button>
@@ -580,13 +656,13 @@ function renderDetail(){
     </div>
 
     <div class="section">
-      <h3>其他店铺 <span class="avg">${c.others.length} 家</span></h3>
+      <h3>其他店铺 <span class="avg">${c.others.length} 家${unratedCount(c.others)}</span></h3>
       <div class="list-add">
         <select id="addOtherType">${otherTypes().map(t=>`<option value="${esc(t.label)}">${t.emoji} ${esc(t.label)}</option>`).join("")}</select>
         <input id="addOther" placeholder="店名，回车添加" />
         <button class="btn" id="addOtherBtn">+ 加</button>
       </div>
-      <div id="otherList">${c.others.map(o=>otherHTML(o)).join("")}</div>
+      <div id="otherList">${othersGroupsHTML(c)}</div>
     </div>
 
     <div class="section">
@@ -596,10 +672,13 @@ function renderDetail(){
   wireDetail(c);
 }
 
+function isUnrated(e){return e.rating===null||e.rating===undefined||e.rating==="";}
+function unratedCount(lst){const n=lst.filter(isUnrated).length;return n?` · ${n} 待评分`:"";}
+function unratedBadge(e){return isUnrated(e)?`<span class="badge-unrated">待评分</span>`:"";}
 function entryHTML(r,kind){
-  return `<div class="entry" data-eid="${r.id}" data-kind="${kind}">
+  return `<div class="entry${isUnrated(r)?' unrated':''}" data-eid="${r.id}" data-kind="${kind}">
     <div class="entry-top">
-      <span class="nm" contenteditable="true" data-f="name">${esc(r.name)}</span>
+      <span class="nm" contenteditable="true" data-f="name">${esc(r.name)}</span>${unratedBadge(r)}
       <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${r.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
       <button class="del" data-del="1">✕</button>
     </div>
@@ -607,26 +686,47 @@ function entryHTML(r,kind){
   </div>`;
 }
 function barHTML(b){
-  return `<div class="entry" data-eid="${b.id}" data-kind="bar">
+  return `<div class="entry${isUnrated(b)?' unrated':''}" data-eid="${b.id}" data-kind="bar">
     <div class="entry-top">
-      <span class="nm" contenteditable="true" data-f="name">${esc(b.name)}</span>
+      <span class="nm" contenteditable="true" data-f="name">${esc(b.name)}</span>${unratedBadge(b)}
       <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${b.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
       <button class="del" data-del="1">✕</button>
     </div>
     <div class="note"><input type="text" value="${esc(b.note||"")}" data-f="note" placeholder="一句话备注…"></div>
-    <div class="cocktail-hint">喝过的 cocktail（点击循环：默认 → <b>喜欢</b> → <i>特别喜欢</i>）</div>
+    <div class="cocktail-hint">喝过的 cocktail（点击循环：默认 → <b>喜欢</b> → <i>特别喜欢</i>）· <span class="fork">🍴</span>=菜</div>
     <div class="chips" data-chips>
       ${(b.cocktails||[]).map(ck=>chipHTML(ck)).join("")}
     </div>
     <div class="list-add"><input data-addck placeholder="cocktail 名，回车添加" style="font-size:12px"></div>
   </div>`;
 }
+function othersGroupsHTML(c){
+  if(!c.others.length) return `<div class="empty" style="padding:18px 8px">还没有其他店铺。<br>上方选类型 + 填店名添加。</div>`;
+  // 类型顺序：先按配置顺序，再追加配置里没有的（被改名/删除的旧类型）
+  const order=otherTypes().map(t=>t.label);
+  const present=[...new Set(c.others.map(o=>o.type||"其他"))];
+  const types=[...order.filter(t=>present.includes(t)), ...present.filter(t=>!order.includes(t))];
+  return types.map(type=>{
+    const items=c.others.filter(o=>(o.type||"其他")===type);
+    const emoji=typeEmoji(type);
+    const collapsed=state.collapsedGroups.has(c.id+"::"+type);
+    return `<div class="ogroup" data-type="${esc(type)}">
+      <div class="ogroup-head ${collapsed?'collapsed':''}" data-grouptoggle="${esc(type)}">
+        <span class="chev">▾</span><span class="ogroup-emoji">${emoji}</span>
+        <span class="ogroup-label">${esc(type)}</span><span class="ogroup-count">${items.length}</span>
+      </div>
+      <div class="ogroup-body" ${collapsed?'style="display:none"':''}>
+        ${items.map(o=>otherHTML(o)).join("")}
+      </div>
+    </div>`;
+  }).join("");
+}
 function otherHTML(o){
   const opts=otherTypes().map(t=>`<option value="${esc(t.label)}" ${t.label===o.type?'selected':''}>${t.emoji} ${esc(t.label)}</option>`).join("");
-  return `<div class="entry" data-eid="${o.id}" data-kind="other">
+  return `<div class="entry${isUnrated(o)?' unrated':''}" data-eid="${o.id}" data-kind="other">
     <div class="entry-top">
       <select class="type-sel" data-f="type">${opts}</select>
-      <span class="nm" contenteditable="true" data-f="name">${esc(o.name)}</span>
+      <span class="nm" contenteditable="true" data-f="name">${esc(o.name)}</span>${unratedBadge(o)}
       <span class="rate"><input type="number" min="0" max="10" step="0.5" value="${o.rating??""}" data-f="rating" placeholder="–"><span class="max">/10</span></span>
       <button class="del" data-del="1">✕</button>
     </div>
@@ -635,8 +735,9 @@ function otherHTML(o){
 }
 function chipHTML(ck){
   const star=ck.level==="loved"?"★":(ck.level==="liked"?"☆":"");
-  return `<span class="chip" data-lvl="${ck.level}" data-ckid="${ck.id}">
-    ${star?`<span class="star">${star}</span>`:""}${esc(ck.name)}<span class="x" data-ckdel="1">✕</span></span>`;
+  const fork=ck.food?`<span class="fork">🍴</span>`:"";
+  return `<span class="chip${ck.food?' food':''}" data-lvl="${ck.level}" data-ckid="${ck.id}" title="${ck.food?'菜（点击切换喜欢度）':'点击切换喜欢度'}">
+    ${fork}${star?`<span class="star">${star}</span>`:""}${esc(ck.name)}<span class="x" data-ckdel="1">✕</span></span>`;
 }
 
 /* ---------- detail wiring ---------- */
@@ -676,7 +777,8 @@ function wireDetail(c){
   // others (combined)
   const addOther=()=>{const v=$("#addOther").value.trim();if(!v)return;
     const type=$("#addOtherType").value||(otherTypes()[0]&&otherTypes()[0].label)||"其他";
-    c.others.push({id:uid(),name:v,type,rating:null,note:""});$("#addOther").value="";markDirty();renderDetail();};
+    c.others.push({id:uid(),name:v,type,rating:null,note:""});$("#addOther").value="";
+    state.collapsedGroups.delete(c.id+"::"+type);markDirty();renderDetail();};
   $("#addOtherBtn").onclick=addOther;
   $("#addOther").addEventListener("keydown",e=>{if(e.key==="Enter")addOther();});
   // entry edits (restaurant + bar + other shared)
@@ -686,10 +788,17 @@ function wireDetail(c){
     const obj=arr.find(x=>x.id===eid);if(!obj)return;
     el.querySelector('[data-f="name"]').addEventListener("blur",e=>{obj.name=e.target.textContent.trim();markDirty();});
     const rIn=el.querySelector('[data-f="rating"]');
-    rIn.addEventListener("input",e=>{obj.rating=e.target.value===""?null:clamp(parseFloat(e.target.value)||0,0,10);markDirty();});
+    rIn.addEventListener("input",e=>{
+      obj.rating=e.target.value===""?null:clamp(parseFloat(e.target.value)||0,0,10);
+      const unr=isUnrated(obj);el.classList.toggle("unrated",unr);
+      let badge=el.querySelector(".badge-unrated");
+      if(unr&&!badge){el.querySelector(".nm").insertAdjacentHTML("afterend",'<span class="badge-unrated">待评分</span>');}
+      else if(!unr&&badge){badge.remove();}
+      markDirty();
+    });
     el.querySelector('[data-f="note"]').addEventListener("input",e=>{obj.note=e.target.value;markDirty();});
     const typeSel=el.querySelector('[data-f="type"]');
-    if(typeSel) typeSel.addEventListener("change",e=>{obj.type=e.target.value;markDirty();});
+    if(typeSel) typeSel.addEventListener("change",e=>{obj.type=e.target.value;markDirty();renderDetail();});
     el.querySelector('[data-del="1"]').onclick=()=>{
       const i=arr.findIndex(x=>x.id===eid);arr.splice(i,1);markDirty();renderDetail();
     };
@@ -706,6 +815,15 @@ function wireDetail(c){
         });
       });
     }
+  });
+  // 其他店铺：分组折叠
+  $("#detailBody").querySelectorAll("[data-grouptoggle]").forEach(head=>{
+    head.onclick=()=>{
+      const key=c.id+"::"+head.dataset.grouptoggle;
+      const body=head.nextElementSibling;
+      if(state.collapsedGroups.has(key)){state.collapsedGroups.delete(key);body.style.display="";head.classList.remove("collapsed");}
+      else{state.collapsedGroups.add(key);body.style.display="none";head.classList.add("collapsed");}
+    };
   });
   $("#delCity").onclick=()=>{
     if(!confirm("确定删除 "+c.name+"？此操作需保存后才会写入 GitHub。"))return;
@@ -731,9 +849,14 @@ async function geocode(q){
     const arr=await r.json();
     const box=$("#geoResults");
     if(!arr.length){box.style.display="none";return;}
-    box.innerHTML=arr.map((p,i)=>`<div data-i="${i}">${esc(p.display_name)}</div>`).join("");
+    box.innerHTML=`<div class="geo-cap">点击添加（自动定位）</div>`+arr.map((p,i)=>{
+      const parts=p.display_name.split(",");
+      const main=esc(parts[0].trim());
+      const rest=esc(parts.slice(1).join(",").trim());
+      return `<div class="geo-item" data-i="${i}"><span class="plus">＋</span><span class="gtxt"><b>${main}</b><i>${rest}</i></span></div>`;
+    }).join("");
     box.style.display="block";
-    box.querySelectorAll("div").forEach(d=>d.onclick=()=>{
+    box.querySelectorAll(".geo-item").forEach(d=>d.onclick=()=>{
       const p=arr[d.dataset.i];const parts=p.display_name.split(",");
       addCity({name:parts[0].trim(),country:(parts[parts.length-1]||"").trim(),
         lat:+(+p.lat).toFixed(4),lng:+(+p.lon).toFixed(4)});
@@ -981,6 +1104,85 @@ mergeDimsFromSettings=function(){
   const po=state._pendingOtypes;
   if(po&&po.length){state.data.config.otherTypes=po;}
 };
+
+/* ============================================================
+   LEADERBOARD
+   ============================================================ */
+state.lb={type:"restaurant",scope:"total",city:""};
+const lbListKey=t=>t==="bar"?"bars":"restaurants";
+
+function lbCollect(type,city){
+  const out=[];
+  state.data.cities.forEach(c=>{
+    if(city && c.name!==city) return;
+    c[lbListKey(type)].forEach(e=>{
+      if(typeof e.rating==="number") out.push({name:e.name,rating:e.rating,city:c.name});
+    });
+  });
+  return out;
+}
+function lbRank(arr){
+  arr.sort((a,b)=> b.rating-a.rating || a.name.localeCompare(b.name));
+  return arr.map(e=>({...e, rank: arr.filter(x=>x.rating>e.rating).length+1}));
+}
+function lbRowHTML(e,showCity){
+  const rc=e.rank<=3?" r"+e.rank:"";
+  return `<div class="lb-row">
+    <span class="lb-rank${rc}">${e.rank}</span>
+    <span class="lb-name">${esc(e.name)}</span>
+    ${showCity?`<span class="lb-city">${esc(e.city)}</span>`:""}
+    <span class="lb-score">${e.rating.toFixed(1)}</span>
+  </div>`;
+}
+function lbPopulateCities(){
+  const type=state.lb.type;
+  const cs=state.data.cities.filter(c=>c[lbListKey(type)].some(e=>typeof e.rating==="number"))
+    .map(c=>c.name).sort((a,b)=>a.localeCompare(b));
+  const sel=$("#lbCity");
+  if(!cs.includes(state.lb.city)) state.lb.city=cs[0]||"";
+  sel.innerHTML=cs.map(n=>`<option value="${esc(n)}" ${n===state.lb.city?"selected":""}>${esc(n)}</option>`).join("");
+}
+function renderLeaderboard(){
+  const {type,scope}=state.lb;
+  const label=type==="bar"?"Bar":"餐厅";
+  const body=$("#lbBody"); const sel=$("#lbCity");
+  if(scope==="region"){sel.style.display="";} else {sel.style.display="none";}
+  if(scope==="total"){
+    const ranked=lbRank(lbCollect(type));
+    body.innerHTML=ranked.length
+      ? ranked.map(e=>lbRowHTML(e,true)).join("")
+      : `<div class="lb-empty">还没有已评分的${label}。<br>给${label}打分后即可上榜。</div>`;
+  }else{
+    const cname=state.lb.city;
+    const c=state.data.cities.find(x=>x.name===cname);
+    if(!c){body.innerHTML=`<div class="lb-empty">没有可排名的城市。</div>`;return;}
+    const ranked=lbRank(lbCollect(type,cname));
+    const meta=STATUS_META[c.status];
+    let html=`<div class="lb-region-head"><span class="mk" style="background:${meta.color};box-shadow:0 0 8px ${meta.color}"></span>${esc(c.name)} <span class="cnt">${ranked.length} 家${label}</span></div>`;
+    html+= ranked.length?ranked.map(e=>lbRowHTML(e,false)).join(""):`<div class="lb-empty">该地暂无已评分的${label}。</div>`;
+    body.innerHTML=html;
+  }
+}
+function openLeaderboard(){
+  lbPopulateCities();
+  renderLeaderboard();
+  $("#lbOverlay").classList.add("open");
+}
+$("#lbBtn").onclick=openLeaderboard;
+$("#lbClose").onclick=()=>$("#lbOverlay").classList.remove("open");
+$("#lbOverlay").addEventListener("click",e=>{if(e.target.id==="lbOverlay")$("#lbOverlay").classList.remove("open");});
+$("#lbType").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  state.lb.type=b.dataset.t;
+  $("#lbType").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  lbPopulateCities();renderLeaderboard();
+});
+$("#lbScope").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  state.lb.scope=b.dataset.s;
+  $("#lbScope").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+  if(state.lb.scope==="region") lbPopulateCities();
+  renderLeaderboard();
+});
+$("#lbCity").addEventListener("change",e=>{state.lb.city=e.target.value;renderLeaderboard();});
 
 /* ============================================================
    SAVE BUTTON + shortcuts + init
