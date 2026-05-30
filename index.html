@@ -197,7 +197,13 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 
 /* leaderboard */
 .lb-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
-.lb-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.lb-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.lb-col.chain .lb-col-head{background:linear-gradient(90deg,var(--accent-soft),transparent)}
+.lb-col.chain .lb-score{color:var(--accent)}
+.lb-row.unrated{opacity:.72}
+.lb-row.unrated .lb-rank{background:transparent;border-style:dashed;color:var(--ink-faint)}
+.lb-row.unrated .lb-score{width:auto}
+.lb-na{font-size:11px;font-weight:600;color:var(--visited);background:var(--visited-soft);border-radius:20px;padding:1px 7px}
 .lb-col{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 .lb-col-head{font-family:"Fraunces",serif;font-size:18px;font-weight:600;padding:15px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px}
 .lb-col-head .ico{font-size:18px}
@@ -307,6 +313,7 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
     <div class="lb-cols">
       <div class="lb-col rest"><div class="lb-col-head"><span class="ico">🍽</span><span>餐厅</span></div><div class="lb-list" id="lbRest"></div></div>
       <div class="lb-col bar"><div class="lb-col-head"><span class="ico">🍸</span><span>Bar</span></div><div class="lb-list" id="lbBar"></div></div>
+      <div class="lb-col chain"><div class="lb-col-head"><span class="ico">🔗</span><span>连锁</span></div><div class="lb-list" id="lbChain"></div></div>
     </div>
   </div></div>
 </div>
@@ -344,7 +351,7 @@ const DEFAULT_OTHER_TYPES=[{label:"咖啡/茶",emoji:"☕"},{label:"甜品",emoj
 
 const state={
   settings:load("la_settings",{owner:"",repo:"",path:"life.json",token:""}),
-  data:{version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[]},
+  data:{version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[]},
   sha:null,selectedId:null,filters:{visited:true,sojourned:true,resided:true},
   dirty:false,loaded:false,regions:null,cityRegion:{},lb:{scope:"total",city:""}
 };
@@ -570,16 +577,29 @@ function wireDetail(c){
 
 /* ---------------- LEADERBOARD ---------------- */
 function lbCollect(type,city){const k=type==="bar"?"bars":"restaurants",out=[];
-  state.data.cities.forEach(c=>{if(city&&c.name!==city)return;c[k].forEach(e=>{if(typeof e.rating==="number")out.push({name:e.name,rating:e.rating,city:c.name})})});return out}
-function lbRank(a){a.sort((x,y)=>y.rating-x.rating||byPinyin(x.name,y.name));return a.map(e=>({...e,rank:a.filter(x=>x.rating>e.rating).length+1}))}
-function lbRowHTML(e,showCity){const rc=e.rank<=3?" r"+e.rank:"";return `<div class="lb-row"><span class="lb-rank${rc}">${e.rank}</span><span class="lb-name">${esc(e.name)}</span>${showCity?`<span class="lb-city">${esc(e.city)}</span>`:""}<span class="lb-score">${e.rating.toFixed(1)}</span></div>`}
-function lbPopulateCities(){const set=new Set();state.data.cities.forEach(c=>{if(c.restaurants.some(e=>typeof e.rating==="number")||c.bars.some(e=>typeof e.rating==="number"))set.add(c.name)});
+  state.data.cities.forEach(c=>{if(city&&c.name!==city)return;c[k].forEach(e=>out.push({name:e.name,rating:e.rating,city:c.name}))});return out}
+function lbRank(a){
+  const rated=a.filter(e=>typeof e.rating==="number").sort((x,y)=>y.rating-x.rating||byPinyin(x.name,y.name));
+  const unrated=a.filter(e=>typeof e.rating!=="number").sort((x,y)=>byPinyin(x.name,y.name));
+  const rk=rated.map(e=>({...e,rank:rated.filter(x=>x.rating>e.rating).length+1}));
+  const ur=unrated.map(e=>({...e,rank:null}));
+  return rk.concat(ur);
+}
+function lbRowHTML(e,showCity){
+  const unr=e.rank===null;
+  const rc=(!unr&&e.rank<=3)?" r"+e.rank:"";
+  return `<div class="lb-row${unr?' unrated':''}"><span class="lb-rank${rc}">${unr?"–":e.rank}</span><span class="lb-name">${esc(e.name)}</span>${showCity&&e.city?`<span class="lb-city">${esc(e.city)}</span>`:""}<span class="lb-score">${unr?'<span class="lb-na">待评分</span>':e.rating.toFixed(1)}</span></div>`}
+function lbPopulateCities(){const set=new Set();state.data.cities.forEach(c=>{if(c.restaurants.length||c.bars.length)set.add(c.name)});
   const cs=[...set].sort(byPinyin);if(!cs.includes(state.lb.city))state.lb.city=cs[0]||"";
   $("#lbCity").innerHTML=cs.map(n=>`<option ${n===state.lb.city?"selected":""}>${esc(n)}</option>`).join("")}
 function renderLB(){const region=state.lb.scope==="region";$("#lbCity").style.display=region?"":"none";
   const city=region?state.lb.city:null;
   [["rest","#lbRest"],["bar","#lbBar"]].forEach(([t,sel])=>{const ranked=lbRank(lbCollect(t,city));
-    $(sel).innerHTML=ranked.length?ranked.map(e=>lbRowHTML(e,!region)).join(""):`<div class="lb-empty">还没有已评分的${t==="bar"?"Bar":"餐厅"}。</div>`})}
+    $(sel).innerHTML=ranked.length?ranked.map(e=>lbRowHTML(e,!region)).join(""):`<div class="lb-empty">还没有${t==="bar"?"Bar":"餐厅"}。</div>`});
+  // 连锁：与地区无关，始终显示全部
+  const ch=lbRank((state.data.chains||[]).map(e=>({name:e.name,rating:e.rating,city:""})));
+  $("#lbChain").innerHTML=ch.length?ch.map(e=>lbRowHTML(e,false)).join(""):`<div class="lb-empty">还没有连锁记录。</div>`;
+}
 function openLB(){lbPopulateCities();renderLB();$("#lb").classList.add("open")}
 $("#lbBtn").onclick=openLB;$("#lbClose").onclick=()=>$("#lb").classList.remove("open");
 $("#lbScope").querySelectorAll("button").forEach(b=>b.onclick=()=>{state.lb.scope=b.dataset.s;$("#lbScope").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(state.lb.scope==="region")lbPopulateCities();renderLB()});
@@ -597,17 +617,23 @@ document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("#g
 function api(path,opts={}){const s=state.settings;return fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/${path}`,{...opts,headers:{Authorization:"Bearer "+s.token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",...(opts.headers||{})}})}
 async function loadData(){setStatus("busy","加载中…");try{
   const r=await api(`contents/${encodeURIComponent(state.settings.path)}`);
-  if(r.status===404){state.sha=null;state.data={version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[]};applyPending();state.loaded=true;state.dirty=false;finalize();toast("未找到 life.json，将在首次保存时创建");return}
+  if(r.status===404){state.sha=null;state.data={version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[]};applyPending();state.loaded=true;state.dirty=false;finalize();toast("未找到 life.json，将在首次保存时创建");return}
   if(r.status===401||r.status===403)throw new Error("Token 无权限或无效");
   if(!r.ok)throw new Error("HTTP "+r.status);
   const j=await r.json();state.sha=j.sha;state.data=normalize(JSON.parse(b64decode(j.content)));state.loaded=true;state.dirty=false;state.cityRegion={};finalize();toast("已加载 "+state.data.cities.length+" 个城市")
 }catch(e){setStatus("","连接失败");toast("加载失败："+e.message,true)}}
-function normalize(p){const d={version:1,config:{dimensions:DEFAULT_DIMS.slice(),otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[]};
+function normalize(p){const d={version:1,config:{dimensions:DEFAULT_DIMS.slice(),otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[]};
   if(p&&typeof p==="object"){if(p.config?.dimensions?.length)d.config.dimensions=p.config.dimensions;if(p.config?.otherTypes?.length)d.config.otherTypes=p.config.otherTypes.map(t=>({label:t.label||"",emoji:t.emoji||"📍"})).filter(t=>t.label);
     if(Array.isArray(p.cities))d.cities=p.cities.map(c=>({id:c.id||uid(),name:c.name||"未命名",country:c.country||"",lat:typeof c.lat==="number"?c.lat:undefined,lng:typeof c.lng==="number"?c.lng:undefined,status:STATUS_META[c.status]?c.status:"visited",scores:c.scores||{},guide:c.guide||"",attractions:c.attractions||"",review:c.review||"",notes:c.notes||"",
       restaurants:(c.restaurants||[]).map(r=>({id:r.id||uid(),name:r.name||"",rating:r.rating??null,note:r.note||""})),
       bars:(c.bars||[]).map(b=>({id:b.id||uid(),name:b.name||"",rating:b.rating??null,note:b.note||"",cocktails:(b.cocktails||[]).map(k=>{const o={id:k.id||uid(),name:k.name||"",level:COCKTAIL_LEVELS.includes(k.level)?k.level:"tried"};if(k.food)o.food=true;return o})})),
-      others:(c.others||[]).map(o=>({id:o.id||uid(),name:o.name||"",type:o.type||"其他",rating:o.rating??null,note:o.note||""}))}))}
+      others:(c.others||[]).map(o=>({id:o.id||uid(),name:o.name||"",type:o.type||"其他",rating:o.rating??null,note:o.note||""}))}));
+    if(Array.isArray(p.chains))d.chains=p.chains.map(c=>({id:c.id||uid(),name:c.name||"",rating:c.rating??null,note:c.note||""}));
+  }
+  // 迁移：旧版把「连锁」当成了城市 → 抽出为 chains，并从城市中移除
+  const ci=d.cities.findIndex(c=>/连锁/.test(c.name)&&typeof c.lat!=="number");
+  if(ci>=0){const old=d.cities.splice(ci,1)[0];
+    [...old.restaurants,...old.bars,...old.others].forEach(e=>d.chains.push({id:e.id||uid(),name:e.name||"",rating:e.rating??null,note:e.note||""}));}
   d.cities.forEach(c=>d.config.dimensions.forEach(dim=>{if(typeof c.scores[dim]!=="number")c.scores[dim]=5}));return d}
 async function saveData(){if(!state.loaded){toast("请先连接数据",true);return}setStatus("busy","保存中…");try{
   const body={message:`update life.json · ${new Date().toISOString()}`,content:b64encode(JSON.stringify(state.data,null,2))};if(state.sha)body.sha=state.sha;
