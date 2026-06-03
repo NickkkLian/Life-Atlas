@@ -399,6 +399,7 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
       <div class="hint">仅存本机浏览器，调 Anthropic API 时直接从浏览器发送（个人自用）。不填则攻略页的「AI 规划路线」不可用，其余跟踪/记账功能照常。</div></div>
     <div class="field"><label>路线规划模型</label>
       <select id="setPlanModel"><option value="claude-haiku-4-5-20251001">Haiku 4.5（快/省，简单行程）</option><option value="claude-sonnet-4-6">Sonnet 4.6（推荐，路线规划）</option><option value="claude-opus-4-8">Opus 4.8（最强，复杂多城）</option></select></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="setWebSearch" style="width:auto"> 允许 AI 联网搜索（取实时信息，如开放时间/票价/天气；按次计费）</label></div>
     <div class="field"><label>城市评分维度（4–6）</label><div class="dims-edit" id="dimsEdit"></div>
       <button class="btn" id="addDim" style="font-size:12px;padding:6px 10px">+ 维度</button></div>
     <div class="field"><label>「其他店铺」类型</label><div class="dims-edit" id="otypesEdit"></div>
@@ -418,11 +419,12 @@ const STATUS_META={resided:{label:"长居",color:"var(--resided)",rank:0},sojour
 const STATUS_HEX={resided:"#ff2d76",sojourned:"#00b8a6",visited:"#ff8c1a"};
 const COCKTAIL_LEVELS=["tried","liked","loved"];
 const DEFAULT_OTHER_TYPES=[{label:"咖啡/茶",emoji:"☕"},{label:"甜品/烘焙",emoji:"🍰"},{label:"桌游",emoji:"🎲"},{label:"密室逃脱",emoji:"🔓"},{label:"剧本杀",emoji:"🕵️"},{label:"足浴按摩",emoji:"💆"},{label:"水疗温泉",emoji:"♨️"},{label:"KTV",emoji:"🎤"},{label:"美发沙龙",emoji:"💇"},{label:"健身运动",emoji:"🏋️"},{label:"酒店",emoji:"🏨"},{label:"其他",emoji:"📍"}];
+const WEB_GUIDE="\n联网搜索规范：① 只在需要时搜索【必去景点 / 必玩项目 / 必吃美食 / 注意事项 / 大致票价·班次·营业时间】这类通用攻略信息；不要为某一天的逐日具体安排、实时定位或精确到某日的信息去搜索。② 搜索时【优先参考小红书】的真实攻略——查询里带上\"小红书\"或\"xhs\"关键词，优先采用其内容；小红书查不到或不足时再用其他来源补充。③ 【只采用 2024 年及以后发布/更新的信息】：查询里带上年份（如 2025、2026）确保时效；遇到 2023 年及更早的内容一律忽略，不要据此作答。引用信息尽量注明大概来源与年份。";
 
 const state={
-  settings:load("la_settings",{owner:"",repo:"",path:"life.json",token:"",aiKey:"",planModel:"claude-sonnet-4-6"}),
+  settings:load("la_settings",{owner:"",repo:"",path:"life.json",token:"",aiKey:"",planModel:"claude-sonnet-4-6",webSearch:true}),
   data:{version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[],trips:[]},
-  tripId:null,chat:{},
+  tripId:null,chat:{},web:true,
   sha:null,selectedId:null,filters:{visited:true,sojourned:true,resided:true},
   dirty:false,loaded:false,regions:null,cityRegion:{},lb:{scope:"total",city:""}
 };
@@ -732,7 +734,7 @@ $("#railToggle").onclick=toggleRail;$("#collapseRail").onclick=toggleRail;$("#ra
 /* ---------------- SETTINGS ---------------- */
 let pendingDims=null,pendingOtypes=null;
 function openSettings(){$("#setOwner").value=state.settings.owner;$("#setRepo").value=state.settings.repo;$("#setPath").value=state.settings.path||"life.json";$("#setToken").value=state.settings.token;
-  $("#setAiKey").value=state.settings.aiKey||"";$("#setPlanModel").value=state.settings.planModel||"claude-haiku-4-5-20251001";
+  $("#setAiKey").value=state.settings.aiKey||"";$("#setPlanModel").value=state.settings.planModel||"claude-haiku-4-5-20251001";$("#setWebSearch").checked=state.settings.webSearch!==false;
   renderDimsEdit(dims());renderOtypesEdit(otherTypes());$("#setWarn").className="warn";$("#overlay").classList.add("open")}
 function dimRow(v){return `<div class="row"><input value="${esc(v)}" data-dim-input><button class="del" data-dim-del>✕</button></div>`}
 function renderDimsEdit(a){$("#dimsEdit").innerHTML=a.map(dimRow).join("");wireDel("#dimsEdit","[data-dim-del]",4,"维度")}
@@ -750,7 +752,7 @@ $("#connectBtn").onclick=async()=>{const owner=$("#setOwner").value.trim(),repo=
   if(!owner||!repo||!token){warn("请填写 owner、repo、token。");return}
   const nd=collectDims();if(nd.length<4||nd.length>6){warn("维度需 4–6 个。");return}
   const no=collectOtypes();if(no.length<1){warn("至少 1 个其他类型。");return}
-  state.settings={owner,repo,path,token,aiKey:$("#setAiKey").value.trim(),planModel:$("#setPlanModel").value};save("la_settings",state.settings);pendingDims=nd;pendingOtypes=no;
+  state.settings={owner,repo,path,token,aiKey:$("#setAiKey").value.trim(),planModel:$("#setPlanModel").value,webSearch:$("#setWebSearch").checked};state.web=state.settings.webSearch;save("la_settings",state.settings);pendingDims=nd;pendingOtypes=no;
   $("#overlay").classList.remove("open");await loadData();
   // apply config changes to existing loaded data
   if(state.loaded){const cur=state.data.config.dimensions;if(JSON.stringify(cur)!==JSON.stringify(nd)&&confirm("评分维度有改动，应用新维度？同名分数保留，新维度默认5。")){state.data.config.dimensions=nd;state.data.cities.forEach(c=>{const ns={};nd.forEach(d=>ns[d]=typeof c.scores[d]==="number"?c.scores[d]:5);c.scores=ns});markDirty();renderList()}
@@ -776,6 +778,7 @@ function normalizeTrip(t){t=t||{};
     hotels:(t.hotels||[]).map(normItem),attractions:(t.attractions||[]).map(normItem),restaurants:(t.restaurants||[]).map(normItem),
     transport:(t.transport||[]).map(normItem),network:(t.network||[]).map(normItem),
     homeCurrency:t.homeCurrency||"CNY",fx:Array.isArray(t.fx)?t.fx.map(x=>({cur:x.cur||"",rate:x.rate})):[],
+    alternates:(t.alternates||[]).map(a=>({id:a.id||uid(),name:a.name||"",note:a.note||""})),
     expenses:(t.expenses||[]).map(e=>({id:e.id||uid(),date:e.date||"",cat:e.cat||"",amount:typeof e.amount==="number"?e.amount:(parseFloat(e.amount)||0),cur:e.cur||t.homeCurrency||"CNY",note:e.note||""}))}}
 function curTrip(){return state.data.trips.find(t=>t.id===state.tripId)}
 function tripDays(t){if(t.startDate&&t.endDate){const a=new Date(t.startDate),b=new Date(t.endDate);const n=Math.round((b-a)/864e5)+1;if(n>0&&n<60)return n}return 0}
@@ -796,7 +799,7 @@ function stClass(cfg,st){const i=cfg.statuses.indexOf(st);if(i<=0)return"st-todo
 
 function renderTripMain(){const t=curTrip();const m=$("#tripMain");
   if(!t){m.innerHTML=`<div class="trip-empty">选择左侧行程，或新建一个。</div>`;return}
-  const tabs=[["plan","🗺 路线规划"],["hotels","🏨 酒店"],["attractions","🎟 景点"],["restaurants","🍽 餐厅"],["transport","🚄 交通"],["network","📶 手机网络"],["money","💱 兑换 · 记账"]];
+  const tabs=[["plan","🗺 路线规划"],["hotels","🏨 酒店"],["attractions","🎟 景点"],["restaurants","🍽 餐厅"],["transport","🚄 交通"],["network","📶 手机网络"],["alternates","📌 备选"],["money","💱 兑换 · 记账"]];
   m.innerHTML=`
     <div class="card"><div class="trip-hd">
       <div class="full"><label>行程名称</label><input id="tName" value="${esc(t.name)}"></div>
@@ -806,7 +809,7 @@ function renderTripMain(){const t=curTrip();const m=$("#tripMain");
       <div><label>本位币</label><input id="tHome" value="${esc(t.homeCurrency)}" placeholder="CNY"></div>
     </div>
     <button class="btn" id="tDel" style="color:var(--resided);border-color:var(--resided);font-size:12px;padding:6px 10px">删除此行程</button></div>
-    <div class="trip-tabs">${tabs.map(([k,l])=>{const ct=TRK[k]?` <span class="ct">${t[k].length}</span>`:"";return `<div class="trip-tab ${state.tripTab===k?'on':''}" data-tab="${k}">${l}${ct}</div>`}).join("")}</div>
+    <div class="trip-tabs">${tabs.map(([k,l])=>{const ct=(TRK[k]||k==="alternates")?` <span class="ct">${(t[k]||[]).length}</span>`:"";return `<div class="trip-tab ${state.tripTab===k?'on':''}" data-tab="${k}">${l}${ct}</div>`}).join("")}</div>
     <div id="tabBody"></div>`;
   $("#tName").oninput=e=>{t.name=e.target.value;markDirty();renderTripRail()};
   $("#tDest").oninput=e=>{t.destination=e.target.value;markDirty()};
@@ -821,7 +824,25 @@ function renderTripMain(){const t=curTrip();const m=$("#tripMain");
 function renderTabBody(){const t=curTrip(),tab=state.tripTab,b=$("#tabBody");if(!t||!b)return;
   if(tab==="plan")return renderPlan(t,b);
   if(tab==="money")return renderMoney(t,b);
+  if(tab==="alternates")return renderAlternates(t,b);
   return renderTracker(t,tab,b);
+}
+function renderAlternates(t,b){const rows=t.alternates;
+  b.innerHTML=`<div class="card">
+    <div class="ai-note" style="margin-bottom:12px">有时间就去、没时间就拉倒的备选点。AI 不会主动往这填——你在「路线规划」的对话框里说「把 ✕✕ 放备选」它才会帮你加。</div>
+    <div class="trk-add"><input id="aName" placeholder="备选地点名"><input id="aNote" placeholder="备注（可选：所在区域 / 为什么想去）"><button class="btn primary" id="aAdd">添加</button></div>
+    ${rows.length?`<table class="vtbl"><thead><tr><th>地点</th><th>备注</th><th class="c-del"></th></tr></thead><tbody>
+      ${rows.map(e=>`<tr data-id="${e.id}"><td><span class="nm-cell" contenteditable data-f="name">${esc(e.name)}</span></td>
+        <td><input class="note-in" data-f="note" value="${esc(e.note)}"></td>
+        <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody></table>`:`<div class="tbl-empty">暂无备选。</div>`}
+  </div>`;
+  const add=()=>{const nm=$("#aName").value.trim();if(!nm)return;t.alternates.push({id:uid(),name:nm,note:$("#aNote").value.trim()});markDirty();renderTripMain()};
+  $("#aAdd").onclick=add;$("#aName").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
+  b.querySelectorAll("tbody tr").forEach(tr=>{const e=t.alternates.find(x=>x.id===tr.dataset.id);if(!e)return;
+    tr.querySelector('[data-f="name"]').addEventListener("blur",x=>{e.name=x.target.textContent.trim();markDirty()});
+    tr.querySelector('[data-f="note"]').addEventListener("input",x=>{e.note=x.target.value;markDirty()});
+    tr.querySelector("[data-del]").onclick=()=>{t.alternates=t.alternates.filter(x=>x.id!==e.id);markDirty();renderTripMain()};
+  });
 }
 
 /* ---- trackers ---- */
@@ -855,17 +876,21 @@ function renderTracker(t,key,b){const cfg=TRK[key],rows=t[key];
 /* ---- AI 路线规划 ---- */
 async function callClaude(system,user,model,maxTokens){
   const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
+  const body={model,max_tokens:maxTokens||2200,system,messages:[{role:"user",content:user}]};
+  if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
     headers:{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","content-type":"application/json"},
-    body:JSON.stringify({model,max_tokens:maxTokens||2200,system,messages:[{role:"user",content:user}]})});
+    body:JSON.stringify(body)});
   if(!r.ok){let msg="API "+r.status;try{const j=await r.json();msg+=" "+(j.error?.message||"")}catch(e){}throw new Error(msg)}
   const j=await r.json();return (j.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("");
 }
 async function callClaudeChat(system,msgs,model,maxTokens){
   const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
+  const body={model,max_tokens:maxTokens||8000,system,messages:msgs};
+  if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
     headers:{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","content-type":"application/json"},
-    body:JSON.stringify({model,max_tokens:maxTokens||8000,system,messages:msgs})});
+    body:JSON.stringify(body)});
   if(!r.ok){let m="API "+r.status;try{const j=await r.json();m+=" "+(j.error?.message||"")}catch(e){}throw new Error(m)}
   const j=await r.json();return (j.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("");
 }
@@ -890,6 +915,7 @@ function renderPlan(t,b){const dateDays=tripDays(t);
       <button class="btn primary" id="pGo">✨ AI 规划路线</button>
       <span style="font-size:12px;color:var(--ink-soft)">本次模型</span>
       <select id="pModel" class="status-sel"><option value="">跟随设置</option><option value="claude-haiku-4-5-20251001">Haiku 4.5</option><option value="claude-sonnet-4-6">Sonnet 4.6</option><option value="claude-opus-4-8">Opus 4.8</option></select>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="pWeb" style="width:auto">🌐 联网</label>
       <span id="pStat" class="ai-note"></span>
     </div>
     <div class="ai-note">默认 ${({"claude-haiku-4-5-20251001":"Haiku 4.5","claude-sonnet-4-6":"Sonnet 4.6","claude-opus-4-8":"Opus 4.8"})[state.settings.planModel]||"Sonnet 4.6"}（设置可改）。会先按片区聚类、就近排序再规划，并在城市间插入「交通」。注：模型按记忆估算，非真实班次/最短路径。</div>
@@ -906,6 +932,7 @@ function renderPlan(t,b){const dateDays=tripDays(t);
   });
   $("#pPace").onchange=e=>{t.pace=e.target.value;markDirty()};
   $("#pInt").oninput=e=>{t.interests=e.target.value;markDirty()};
+  $("#pWeb").checked=state.web;$("#pWeb").onchange=e=>{state.web=e.target.checked};
   $("#pGo").onclick=()=>runPlan(t);
   renderItinerary(t,$("#planOut"));
   renderChat(t,$("#planChat"));
@@ -914,8 +941,9 @@ function getChat(id){state.chat[id]=state.chat[id]||[];return state.chat[id]}
 function renderChat(t,box){if(!box)return;const log=getChat(t.id);
   box.innerHTML=`<div class="card"><h3>与 AI 对话修改行程 ${log.length?'<button class="del" id="chatClr" title="清空对话" style="font-size:13px">清空</button>':''}</h3>
     <div class="chat-log" id="chatLog">${log.length?log.map(m=>`<div class="chat-msg ${m.role}${m.edited?" edited":""}">${esc(m.text)}</div>`).join(""):'<div class="chat-empty">先生成或填好行程，再在这里说你的修改/补充。<br>例：「第2天下午改成购物」「京都那天加个怀石料理午餐」「第3天太赶，去掉一个景点」「推荐附近一家拉面」。</div>'}<div id="chatBusy"></div></div>
-    <div class="chat-in"><input id="chatIn" placeholder="说出你的修改/补充，回车发送…"><button class="btn primary" id="chatSend">发送</button></div></div>`;
+    <div class="chat-in"><input id="chatIn" placeholder="说出你的修改/补充，回车发送…"><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap"><input type="checkbox" id="chatWeb" style="width:auto">🌐</label><button class="btn primary" id="chatSend">发送</button></div></div>`;
   const lg=$("#chatLog");if(lg)lg.scrollTop=lg.scrollHeight;
+  $("#chatWeb").checked=state.web;$("#chatWeb").onchange=e=>{state.web=e.target.checked};
   const send=()=>{const v=$("#chatIn").value.trim();if(v)sendChat(t,v)};
   $("#chatSend").onclick=send;$("#chatIn").addEventListener("keydown",e=>{if(e.key==="Enter")send()});
   if($("#chatClr"))$("#chatClr").onclick=()=>{state.chat[t.id]=[];renderChat(t,box)};
@@ -926,10 +954,13 @@ async function sendChat(t,text){const log=getChat(t.id);log.push({role:"user",te
   const model=($("#pModel")&&$("#pModel").value)||state.settings.planModel||"claude-sonnet-4-6";
   const segText=t.segments.filter(s=>s.place.trim()).map((s,i)=>`${i+1}. ${s.place} — ${s.days}天`).join("\n")||(t.destination||"");
   const sys="你正在与用户一起迭代修改一份旅行行程。\n当前分段：\n"+segText+"\n当前行程(JSON)：\n"+JSON.stringify(t.itinerary)
+    +"\n当前备选地点(JSON)：\n"+JSON.stringify(t.alternates)
     +"\n\n规则：理解用户的局部修改/补充/提问。"
-    +"① 若需要改动行程：先用1-2句中文说明改了什么，再另起一行写 ===JSON=== ，其后输出【完整更新后】的行程 JSON（结构与当前一致：{days:[{day,date,place,title,stops:[{time,name,type,area,note}]}],tips:[]}），未被要求改动的部分保持原样。"
+    +"① 若需要改动行程：先用1-2句中文说明改了什么，再另起一行写 ===JSON=== ，其后输出【完整更新后】的行程 JSON（结构：{days:[{day,date,place,title,stops:[{time,name,type,area,note}]}],tips:[]}），未被要求改动的部分保持原样。"
     +"② 若用户只是提问、不需要改行程：正常用中文回答，【不要】输出 JSON。"
-    +"保持同片区聚类、少折返、用餐就近、城际交通注明方式与耗时等原则。中文。";
+    +"③ 关于「备选地点」：这是用户手动管理的清单。你【绝不】主动把任何点加入备选或从行程移到备选。"
+    +"只有当用户明确要求（如「把✕✕放备选/加到备选」「把备选里的✕✕加进第2天」）时，才改动备选：在上面的 JSON 里【额外】加一个 alternates:[{name,note}] 字段表示更新后的完整备选清单；没有改动备选时【不要】包含 alternates 字段。"
+    +"保持同片区聚类、少折返、用餐就近、城际交通注明方式与耗时等原则。中文。"+(state.web?WEB_GUIDE:"");
   const msgs=log.slice(-10).map(m=>({role:m.role,content:m.text}));
   const days=(t.itinerary.days||[]).length||t.segments.reduce((a,s)=>a+(s.days||1),0)||3;
   try{const raw=await callClaudeChat(sys,msgs,model,Math.min(16000,3500+days*1100));
@@ -937,10 +968,16 @@ async function sendChat(t,text){const log=getChat(t.id);log.push({role:"user",te
     let say=(mk>=0?raw.slice(0,mk):raw).trim();let edited=false;
     if(mk>=0){let jt=raw.slice(mk+10).replace(/```json|```/g,"").trim();const a=jt.indexOf("{"),z=jt.lastIndexOf("}");if(a>=0&&z>a)jt=jt.slice(a,z+1);
       let data;try{data=JSON.parse(jt)}catch(e){data=tryRepairJSON(jt)}
-      if(data&&Array.isArray(data.days)&&data.days.length){
-        if(t.startDate){const base=new Date(t.startDate);data.days.forEach((d,i)=>{if(!d.date){const dt=new Date(base);dt.setDate(base.getDate()+i);d.date=dt.toISOString().slice(0,10)}})}
-        t.itinerary={days:data.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(x=>({time:x.time||"",name:x.name||"",type:x.type||"",area:x.area||"",note:x.note||""}))})),tips:data.tips||t.itinerary.tips};
-        edited=true;markDirty();
+      if(data){
+        if(Array.isArray(data.days)&&data.days.length){
+          if(t.startDate){const base=new Date(t.startDate);data.days.forEach((d,i)=>{if(!d.date){const dt=new Date(base);dt.setDate(base.getDate()+i);d.date=dt.toISOString().slice(0,10)}})}
+          t.itinerary={days:data.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(x=>({time:x.time||"",name:x.name||"",type:x.type||"",area:x.area||"",note:x.note||""}))})),tips:data.tips||t.itinerary.tips};
+          edited=true;markDirty();
+        }
+        if(Array.isArray(data.alternates)){const prev=t.alternates;
+          t.alternates=data.alternates.map(x=>{const ex=prev.find(p=>p.name===(x.name||""));return{id:ex?ex.id:uid(),name:x.name||"",note:x.note||""}});
+          edited=true;markDirty();
+        }
       }
     }
     log.push({role:"assistant",text:say||"（已更新行程）",edited});
@@ -983,7 +1020,8 @@ async function runPlan(t){const stat=$("#pStat");
     +"5)城内移动在 note 注明大致方式(地铁/步行/打车)与相邻点间大致时长。"
     +"先用不超过120字简述各天主片区与就近思路；然后另起一行写 ===JSON=== ，其后只输出 JSON，不要再有任何文字。"
     +'JSON结构:{"days":[{"day":1,"date":"","place":"城市","title":"片区/主题","stops":[{"time":"09:00","name":"地点/餐厅","type":"景点|餐厅|活动|交通","area":"片区","note":"含移动方式/时长"}]}],"tips":["提示"]}。'
-    +"严格按分段顺序与天数分配每一天，day.place 标注当天城市。中文。给了起始日期则按真实日期填 date(YYYY-MM-DD)。";
+    +"严格按分段顺序与天数分配每一天，day.place 标注当天城市。中文。给了起始日期则按真实日期填 date(YYYY-MM-DD)。"
+    +"注意：用户另有「备选地点」清单由其自行管理，你不要在输出里包含 alternates，也不要替用户把点放进备选。"+(state.web?WEB_GUIDE:"");
   const user=`分段（按顺序，共 ${totalDays} 天）：\n${segText}\n总目的地：${t.destination||segs.map(s=>s.place).join("、")}\n节奏：${pace}\n偏好：${intr||"通用"}\n起始日期：${t.startDate||"未定"}`;
   const budget=Math.min(16000,3200+totalDays*1100);
   try{let raw=await callClaude(sys,user,model,budget);state._lastAI=raw;
@@ -1058,7 +1096,7 @@ window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.
 
 fetch("regions.geojson").then(r=>r.ok?r.json():null).then(j=>{if(j){state.regions=j;state.cityRegion={};refreshMap()}}).catch(()=>{});
 
-renderList();updateStatus();
+renderList();updateStatus();state.web=state.settings.webSearch!==false;
 if(state.settings.owner&&state.settings.repo&&state.settings.token)loadData();else setTimeout(openSettings,400);
 </script>
 </body>
