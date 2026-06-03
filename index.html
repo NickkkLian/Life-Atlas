@@ -895,7 +895,7 @@ async function callClaude(system,user,model,maxTokens){
   const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
   const body={model,max_tokens:maxTokens||2200,system,messages:[{role:"user",content:user}]};
   if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
-  if(state.think&&/sonnet|opus/.test(model))body.thinking={type:"adaptive",effort:"high"};
+  if(state.think&&/sonnet|opus/.test(model)){const bud=Math.max(1024,Math.min(8000,(body.max_tokens)-1024));body.thinking={type:"enabled",budget_tokens:bud};}
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
     headers:{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","content-type":"application/json"},
     body:JSON.stringify(body)});
@@ -906,7 +906,7 @@ async function callClaudeChat(system,msgs,model,maxTokens){
   const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
   const body={model,max_tokens:maxTokens||8000,system,messages:msgs};
   if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
-  if(state.think&&/sonnet|opus/.test(model))body.thinking={type:"adaptive",effort:"high"};
+  if(state.think&&/sonnet|opus/.test(model)){const bud=Math.max(1024,Math.min(8000,(body.max_tokens)-1024));body.thinking={type:"enabled",budget_tokens:bud};}
   const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
     headers:{"x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true","content-type":"application/json"},
     body:JSON.stringify(body)});
