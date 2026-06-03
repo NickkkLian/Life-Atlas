@@ -910,6 +910,10 @@ function renderItinerary(t,out){const it=t.itinerary;
       else{if(!ea.has(k)){t.attractions.push(normItem({name:s.name,when:d.date||("Day"+d.day),status:"待定",note:s.area||d.place}));ea.add(k);na++}}}));
     markDirty();toast(`已导入 ${na} 景点、${nr} 餐厅、${nt} 交通`);renderTripMain()};
 }
+function tryRepairJSON(s){try{let str=s,inStr=false,esc2=false,stack=[];const close={'{':'}','[':']'};
+  for(const ch of str){if(inStr){if(esc2)esc2=false;else if(ch==='\\')esc2=true;else if(ch==='"')inStr=false;continue}
+    if(ch==='"')inStr=true;else if(ch==='{'||ch==='[')stack.push(close[ch]);else if(ch==='}'||ch===']')stack.pop()}
+  if(inStr)str+='"';str=str.replace(/,\s*$/,'');while(stack.length)str+=stack.pop();return JSON.parse(str)}catch(e){return null}}
 async function runPlan(t){const stat=$("#pStat");
   let segs=t.segments.filter(s=>s.place.trim());
   if(!segs.length){if(t.destination.trim())segs=[{place:t.destination.trim(),days:tripDays(t)||3}];else{toast("先填至少一段（城市+天数）",true);return}}
@@ -921,13 +925,18 @@ async function runPlan(t){const stat=$("#pStat");
     +'{"days":[{"day":1,"date":"","place":"所在城市","title":"片区/主题","stops":[{"time":"09:00","name":"地点/餐厅名","type":"景点|餐厅|活动|交通","area":"区域","note":"提示"}]}],"tips":["提示"]}。'
     +"严格按分段顺序与天数分配每一天，并在 day.place 标注该天所在城市。相邻两段之间，在切换当天加入一个 type=\"交通\" 的 stop（注明大致方式如高铁/航班与耗时）。每天 3-6 个 stop 含用餐；地点按就近排序。节奏轻松=少而慢，紧凑=多。给了起始日期则按真实日期填 date(YYYY-MM-DD)，否则留空。中文。";
   const user=`分段（按顺序，共 ${totalDays} 天）：\n${segText}\n总目的地：${t.destination||segs.map(s=>s.place).join("、")}\n节奏：${pace}\n偏好：${intr||"通用"}\n起始日期：${t.startDate||"未定"}`;
-  try{let txt=await callClaude(sys,user,model,3200);
-    txt=txt.replace(/```json|```/g,"").trim();const s=txt.indexOf("{"),e=txt.lastIndexOf("}");if(s>=0)txt=txt.slice(s,e+1);
-    const data=JSON.parse(txt);
-    if(t.startDate&&Array.isArray(data.days)){const base=new Date(t.startDate);data.days.forEach((d,i)=>{if(!d.date){const dt=new Date(base);dt.setDate(base.getDate()+i);d.date=dt.toISOString().slice(0,10)}})}
-    t.itinerary={days:(data.days||[]).map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(x=>({time:x.time||"",name:x.name||"",type:x.type||"",area:x.area||"",note:x.note||""}))})),tips:data.tips||[]};
+  try{let raw=await callClaude(sys,user,model,8000);state._lastAI=raw;
+    let txt=raw.replace(/```json|```/g,"").trim();const a=txt.indexOf("{"),z=txt.lastIndexOf("}");if(a>=0&&z>a)txt=txt.slice(a,z+1);
+    let data;try{data=JSON.parse(txt)}catch(pe){data=tryRepairJSON(txt)}
+    if(!data||!Array.isArray(data.days)||!data.days.length)throw new Error("返回内容无法解析为行程（可能被截断或不是纯 JSON）");
+    if(t.startDate){const base=new Date(t.startDate);data.days.forEach((d,i)=>{if(!d.date){const dt=new Date(base);dt.setDate(base.getDate()+i);d.date=dt.toISOString().slice(0,10)}})}
+    t.itinerary={days:data.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(x=>({time:x.time||"",name:x.name||"",type:x.type||"",area:x.area||"",note:x.note||""}))})),tips:data.tips||[]};
     markDirty();stat.textContent="";renderTripMain();toast("分段路线已生成 ✓");
-  }catch(err){stat.textContent="";$("#pGo").disabled=false;toast("规划失败："+err.message,true)}
+  }catch(err){stat.textContent="";$("#pGo").disabled=false;const out=$("#planOut");
+    if(out)out.innerHTML=`<div class="card"><h3 style="color:var(--resided);letter-spacing:0;text-transform:none">规划失败</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:8px">${esc(err.message)}。<br>建议：再点一次重试；长行程可拆成两段分别规划；或在 ⚙ 设置切到 <b>Sonnet 4.6</b>（更稳）。</p>
+      ${state._lastAI?`<details><summary style="cursor:pointer;font-size:12px;color:var(--ink-faint)">查看 AI 原始返回（排查用）</summary><pre style="white-space:pre-wrap;font-size:11px;background:var(--surface-2);padding:10px;border-radius:8px;max-height:320px;overflow:auto">${esc(state._lastAI.slice(0,5000))}</pre></details>`:""}</div>`;
+    toast("规划失败："+err.message,true)}
 }
 
 /* ---- 兑换 + 记账 ---- */
