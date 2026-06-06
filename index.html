@@ -419,6 +419,15 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
   </div>
 </div>
 
+<div class="overlay" id="exportOverlay">
+  <div class="modal">
+    <h2 class="serif">省流版路线</h2>
+    <p class="lede">只含大概路线，已去掉时间 / 备注 / 交通 / 提示等细节，方便复制或下载发给朋友。</p>
+    <textarea id="exportText" readonly style="height:300px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7"></textarea>
+    <div class="modal-foot"><button class="btn" id="exportClose">关闭</button><button class="btn" id="exportDl">下载 .txt</button><button class="btn primary" id="exportCopy">复制</button></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -798,12 +807,26 @@ function snapItinerary(t,label){if(t.itinerary&&t.itinerary.days&&t.itinerary.da
   if(t.history.length>15)t.history.length=15;}}
 function tripChat(t){t.chat=t.chat||[];return t.chat}
 function pushChat(t,m){tripChat(t).push(m);if(t.chat.length>60)t.chat=t.chat.slice(-60);markDirty()}
+function buildLiteText(t){const it=t.itinerary,lines=[];
+  let head=t.name||"行程";const dest=t.destination||(t.segments||[]).map(s=>s.place).filter(Boolean).join(" · ");
+  if(dest)head+=" · "+dest;
+  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(it.days.length?it.days.length+"天":"");
+  lines.push(head+(dr?`（${dr}）`:""));lines.push("");
+  it.days.forEach(d=>{const spots=d.stops.filter(s=>!/灵活|自由|交通/.test(s.type)&&!/灵活时间/.test(s.name)).map(s=>s.name).filter(Boolean);
+    const dl=d.date?d.date.slice(5):"";
+    lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||"自由活动"}`);});
+  return lines.join("\n");}
+function openExport(t){if(!t.itinerary.days.length){toast("还没有路线，先规划一下",true);return}$("#exportText").value=buildLiteText(t);$("#exportOverlay").classList.add("open")}
 function tripDays(t){if(t.startDate&&t.endDate){const a=new Date(t.startDate),b=new Date(t.endDate);const n=Math.round((b-a)/864e5)+1;if(n>0&&n<60)return n}return 0}
 
 function openTrips(){if(!state.loaded){toast("请先连接数据",true);return}
   if(!curTrip()&&state.data.trips.length)state.tripId=state.data.trips[0].id;
   state.tripTab=state.tripTab||"plan";$("#trips").classList.add("open");renderTripRail();renderTripMain()}
 $("#tripsBtn").onclick=openTrips;$("#tripsClose").onclick=()=>$("#trips").classList.remove("open");
+$("#exportClose").onclick=()=>$("#exportOverlay").classList.remove("open");
+$("#exportOverlay").addEventListener("click",e=>{if(e.target.id==="exportOverlay")$("#exportOverlay").classList.remove("open")});
+$("#exportCopy").onclick=async()=>{const ta=$("#exportText");try{await navigator.clipboard.writeText(ta.value);toast("已复制到剪贴板")}catch(e){ta.select();try{document.execCommand("copy");toast("已复制")}catch(_){toast("复制失败，请手动选择",true)}}};
+$("#exportDl").onclick=()=>{const t=curTrip();const blob=new Blob([$("#exportText").value],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=((t&&t.name)||"行程")+"-省流版.txt";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $("#tripNew").onclick=()=>{const t=normalizeTrip({name:"新行程"});state.data.trips.unshift(t);state.tripId=t.id;state.tripTab="plan";markDirty();renderTripRail();renderTripMain()};
 
 function renderTripRail(){const r=$("#tripRail");
@@ -1029,7 +1052,7 @@ function renderItinerary(t,out){const it=t.itinerary;
     ${d.stops.map(s=>{const fl=/灵活|自由/.test(s.type)||/灵活时间/.test(s.name);return `<div class="stop${fl?' flex':''}"><span class="t">${esc(s.time||"")}</span><div class="body"><b>${fl?"🕊 ":""}${esc(s.name)}</b>${s.type&&!fl?`<span class="tp">${esc(s.type)}</span>`:""}${s.area?`<span class="tp">${esc(s.area)}</span>`:""}${s.note?`<span class="n">${esc(s.note)}</span>`:""}</div></div>`}).join("")}
     </div>`).join("")
     +(it.tips.length?`<div class="card"><h3>提示</h3><ul class="tips">${it.tips.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"")
-    +`<button class="btn" id="impList">⬇ 把景点/餐厅/交通导入对应清单</button>`;
+    +`<button class="btn" id="impList">⬇ 把景点/餐厅/交通导入对应清单</button> <button class="btn" id="liteExport">📤 导出省流版</button>`;
   $("#impList").onclick=()=>{let na=0,nr=0,nt=0;const ex=k=>new Set(t[k].map(e=>e.name.replace(/\s/g,"").toLowerCase()));
     const ea=ex("attractions"),er=ex("restaurants"),et=ex("transport");
     const transp=ty=>/交通|移动|前往|飞|航班|机场|火车|高铁|新干线|铁|巴士|大巴|船|渡轮|地铁|打车|包车|租车/.test(ty);
@@ -1039,6 +1062,7 @@ function renderItinerary(t,out){const it=t.itinerary;
       else if(/餐厅|美食|吃|饭|食/.test(s.type)){if(!er.has(k)){t.restaurants.push(normItem({name:s.name,when,status:"待定",note:s.area||d.place}));er.add(k);nr++}}
       else{if(!ea.has(k)){t.attractions.push(normItem({name:s.name,when:d.date||("Day"+d.day),status:"待定",note:s.area||d.place}));ea.add(k);na++}}}));
     markDirty();toast(`已导入 ${na} 景点、${nr} 餐厅、${nt} 交通`);renderTripMain()};
+  $("#liteExport").onclick=()=>openExport(t);
 }
 function tryRepairJSON(s){try{let str=s,inStr=false,esc2=false,stack=[];const close={'{':'}','[':']'};
   for(const ch of str){if(inStr){if(esc2)esc2=false;else if(ch==='\\')esc2=true;else if(ch==='"')inStr=false;continue}
