@@ -447,8 +447,8 @@ const state={
   sha:null,selectedId:null,filters:{visited:true,sojourned:true,resided:true},
   dirty:false,loaded:false,regions:null,cityRegion:{},lb:{scope:"total",city:""}
 };
-/* [hub-portal] 令牌为空时从共享配置 pha-config 读 owner+token（附加，安全合并，不覆盖已填，不改 repo/path） */
-try{var _pha=JSON.parse(localStorage.getItem('pha-config')||'null');if(_pha&&_pha.token&&!state.settings.token){state.settings.owner=state.settings.owner||_pha.owner;state.settings.token=_pha.token;}}catch(e){}
+  /* [hub-portal] 从共享配置 pha-config 补全 owner/repo/token（仅填空缺，不覆盖已填，不改 path） */
+  try{var _pha=JSON.parse(localStorage.getItem('pha-config')||'null');if(_pha){if(!state.settings.owner&&_pha.owner)state.settings.owner=_pha.owner;if(!state.settings.repo&&_pha.repo)state.settings.repo=_pha.repo;if(!state.settings.token&&_pha.token)state.settings.token=_pha.token;}}catch(e){}
 function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
