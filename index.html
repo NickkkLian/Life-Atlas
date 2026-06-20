@@ -431,7 +431,7 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
     <h2 class="serif">省流版路线</h2>
     <p class="lede">只含大概路线，已去掉时间 / 备注 / 交通 / 提示等细节，方便复制或下载发给朋友。</p>
     <textarea id="exportText" readonly style="height:300px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7"></textarea>
-    <div class="modal-foot"><button class="btn" id="exportClose">关闭</button><button class="btn" id="exportDl">下载 .txt</button><button class="btn primary" id="exportCopy">复制</button></div>
+    <div class="modal-foot"><button class="btn" id="exportClose">关闭</button><button class="btn" id="exportImg">🖼 导出长图</button><button class="btn" id="exportDl">下载 .txt</button><button class="btn primary" id="exportCopy">复制</button></div>
   </div>
 </div>
 
@@ -869,6 +869,123 @@ function buildLiteText(t){const it=t.itinerary,lines=[];
     const dl=d.date?d.date.slice(5):"";
     lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||"自由活动"}`);});
   return lines.join("\n");}
+/* ---- 攻略导出长图（纯 canvas 自绘，无外部依赖、离线可用、无跨域污染） ---- */
+async function exportLongImage(t){
+  if(!t.itinerary.days.length){toast("还没有路线，先规划一下",true);return}
+  toast("正在生成长图…");
+  try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch(e){}
+  const W=760, P=44, SCALE=2;
+  const C={bg:"#fbf6ef",card:"#ffffff",ink:"#1f1633",soft:"#5b5470",faint:"#9b93a8",line:"#ece2d6",accent:"#6c5ce7",accentSoft:"#e7e3fb"};
+  const fSans="'PingFang SC','Hiragino Sans GB','Microsoft YaHei',-apple-system,system-ui,sans-serif";
+  const fSerif="'Fraunces','Songti SC',Georgia,serif";
+  const fMono="'JetBrains Mono','SFMono-Regular',Menlo,monospace";
+  const mc=document.createElement("canvas").getContext("2d");
+  const f=(w,s,fam)=>`${w} ${s}px ${fam}`;
+  function wrap(text,size,weight,fam,maxW){
+    mc.font=f(weight,size,fam); text=(text==null?"":String(text));
+    const out=[];
+    text.split("\n").forEach(seg=>{
+      const toks=seg.match(/[A-Za-z0-9@._%+\-/:]+|\s+|[^\sA-Za-z0-9@._%+\-/:]/g)||[];
+      let line="";
+      for(const tk of toks){
+        const test=line+tk;
+        if(mc.measureText(test).width<=maxW||line===""){
+          if(line===""&&mc.measureText(tk).width>maxW){
+            let cur=""; for(const ch of tk){ if(cur&&mc.measureText(cur+ch).width>maxW){out.push(cur);cur=ch;} else cur+=ch; } line=cur;
+          } else line=test;
+        } else { out.push(line.replace(/\s+$/,"")); line=tk.replace(/^\s+/,""); }
+      }
+      out.push(line);
+    });
+    return out.length?out:[""];
+  }
+  const cardX=P, cardW=W-P*2, pad=20, innerW=cardW-pad*2, timeCol=64, nameW=innerW-timeCol;
+  // 预排版：算出每个 day 卡片高度 + 总高
+  function dayBlock(d){
+    const head=(`Day ${d.day}`+(d.date?` · ${d.date.slice(5)}`:"")+(d.place?` · ${d.place}`:"")+(d.title?` — ${d.title}`:""));
+    const headLines=wrap(head,21,"700",fSans,innerW);
+    let h=pad + headLines.length*30 + 6;
+    const stops=(d.stops||[]);
+    const rows=stops.map(s=>{
+      const nameLines=wrap((s.name||"（未命名）")+(s.type?`  · ${s.type}`:""),17,"600",fSans,nameW);
+      const meta=[s.area,s.note].filter(Boolean).join(" · ");
+      const metaLines=meta?wrap(meta,14,"400",fSans,nameW):[];
+      const rh=nameLines.length*24 + metaLines.length*20 + 12;
+      return {time:s.time||"",nameLines,metaLines,rh};
+    });
+    rows.forEach(r=>h+=r.rh);
+    if(!stops.length){h+=28;}
+    h+=pad-6;
+    return {headLines,rows,empty:!stops.length,h};
+  }
+  const blocks=t.itinerary.days.map(dayBlock);
+  const tips=(t.itinerary.tips||[]).filter(Boolean);
+  // 头部高度
+  const titleLines=wrap(t.name||"我的行程",40,"700",fSerif,cardW);
+  const dest=t.destination||(t.segments||[]).map(s=>s.place).filter(Boolean).join(" · ");
+  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(t.itinerary.days.length+" 天");
+  const sub=[dest,dr].filter(Boolean).join("   ·   ");
+  const subLines=sub?wrap(sub,19,"400",fSans,cardW):[];
+  let headH=P + 13+18 + titleLines.length*48 + (subLines.length?subLines.length*27+6:0) + 10 + 4+24;
+  // tips 高度
+  let tipsH=0, tipLineSets=[];
+  if(tips.length){
+    tipLineSets=tips.map(tp=>wrap("· "+tp,15,"400",fSans,innerW));
+    tipsH=14 + pad + 30 + tipLineSets.reduce((a,ls)=>a+ls.length*23,0)+8 + pad-6;
+  }
+  const footH=46;
+  const gap=14;
+  let totalH=headH + blocks.reduce((a,b)=>a+b.h+gap,0) + tipsH + footH + P;
+
+  const cv=document.createElement("canvas");
+  cv.width=W*SCALE; cv.height=Math.ceil(totalH)*SCALE;
+  const ctx=cv.getContext("2d"); ctx.scale(SCALE,SCALE);
+  ctx.textBaseline="alphabetic"; ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,totalH);
+  function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+  function T(str,x,y,size,weight,fam,color){ctx.font=f(weight,size,fam);ctx.fillStyle=color;ctx.fillText(str,x,y);}
+  let y=P;
+  T("LIFE ATLAS · 旅游攻略",P,y+13,13,"600",fMono,C.accent); y+=13+18;
+  titleLines.forEach(ln=>{y+=40; T(ln,P,y,40,"700",fSerif,C.ink); y+=8;});
+  subLines.forEach(ln=>{y+=19; T(ln,P,y,19,"400",fSans,C.soft); y+=8;});
+  y+=10; ctx.fillStyle=C.accent; rrect(P,y,54,4,2); ctx.fill(); y+=24;
+  // days
+  blocks.forEach((b,i)=>{
+    const d=t.itinerary.days[i];
+    ctx.fillStyle=C.card; rrect(cardX,y,cardW,b.h,16); ctx.fill();
+    ctx.strokeStyle=C.line; ctx.lineWidth=1; rrect(cardX,y,cardW,b.h,16); ctx.stroke();
+    let cy=y+pad;
+    b.headLines.forEach(ln=>{cy+=22; T(ln,cardX+pad,cy,21,"700",fSans,C.accent); cy+=8;});
+    cy+=2;
+    if(b.empty){ T("（暂无具体停留点）",cardX+pad,cy+18,15,"400",fSans,C.faint); cy+=28; }
+    b.rows.forEach(r=>{
+      const top=cy;
+      if(r.time) T(r.time,cardX+pad,top+18,15,"600",fMono,C.accent);
+      let ny=top;
+      r.nameLines.forEach(ln=>{ny+=20; T(ln,cardX+pad+timeCol,ny,17,"600",fSans,C.ink); ny+=4;});
+      r.metaLines.forEach(ln=>{ny+=16; T(ln,cardX+pad+timeCol,ny,14,"400",fSans,C.soft); ny+=4;});
+      cy=top+r.rh;
+    });
+    y+=b.h+gap;
+  });
+  // tips
+  if(tips.length){
+    y+=14;
+    ctx.fillStyle=C.accentSoft; rrect(cardX,y,cardW,tipsH-14,16); ctx.fill();
+    let cy=y+pad; T("📌 实用提示 Tips",cardX+pad,cy+18,18,"700",fSans,C.ink); cy+=30;
+    tipLineSets.forEach(ls=>{ ls.forEach(ln=>{cy+=20; T(ln,cardX+pad,cy,15,"400",fSans,C.ink); cy+=3;}); cy+=6; });
+    y+=tipsH-14+14;
+  }
+  // footer
+  T(`由 Life Atlas 生成 · ${new Date().toISOString().slice(0,10)}`,P,totalH-P+6,12,"400",fMono,C.faint);
+
+  await new Promise(res=>cv.toBlob(b=>{
+    if(!b){toast("生成失败",true);return res();}
+    const a=document.createElement("a"); a.href=URL.createObjectURL(b);
+    a.download=((t.name||"行程").replace(/[\\/:*?"<>|]/g,"_"))+"-攻略长图.png";
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+    toast("长图已导出"); res();
+  },"image/png"));
+}
 function openExport(t){if(!t.itinerary.days.length){toast("还没有路线，先规划一下",true);return}$("#exportText").value=buildLiteText(t);$("#exportOverlay").classList.add("open")}
 function tripDays(t){if(t.startDate&&t.endDate){const a=new Date(t.startDate),b=new Date(t.endDate);const n=Math.round((b-a)/864e5)+1;if(n>0&&n<60)return n}return 0}
 
@@ -877,6 +994,7 @@ function openTrips(){if(!state.loaded){toast("请先连接数据",true);return}
   state.tripTab=state.tripTab||"plan";$("#trips").classList.add("open");renderTripRail();renderTripMain()}
 $("#tripsBtn").onclick=openTrips;$("#tripsClose").onclick=()=>$("#trips").classList.remove("open");
 $("#exportClose").onclick=()=>$("#exportOverlay").classList.remove("open");
+$("#exportImg").onclick=()=>{const t=curTrip();if(t)exportLongImage(t);};
 $("#exportOverlay").addEventListener("click",e=>{if(e.target.id==="exportOverlay")$("#exportOverlay").classList.remove("open")});
 $("#exportCopy").onclick=async()=>{const ta=$("#exportText");try{await navigator.clipboard.writeText(ta.value);toast("已复制到剪贴板")}catch(e){ta.select();try{document.execCommand("copy");toast("已复制")}catch(_){toast("复制失败，请手动选择",true)}}};
 $("#exportDl").onclick=()=>{const t=curTrip();const blob=new Blob([$("#exportText").value],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=((t&&t.name)||"行程")+"-省流版.txt";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
