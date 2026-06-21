@@ -844,7 +844,8 @@ function normalizeTrip(t){t=t||{};
   const it=t.itinerary||{};
   return{id:t.id||uid(),name:t.name||"未命名行程",destination:t.destination||"",startDate:t.startDate||"",endDate:t.endDate||"",
     pace:t.pace||"适中",interests:t.interests||"",
-    wishCities:t.wishCities||"",mustSee:t.mustSee||"",wishFood:t.wishFood||"",dayStart:t.dayStart||"",dayEnd:t.dayEnd||"",
+    wishCities:t.wishCities||"",mustSee:t.mustSee||"",wishFood:t.wishFood||"",
+    dayWindows:Array.isArray(t.dayWindows)?t.dayWindows.map(w=>({day:parseInt(w.day)||"",start:w.start||"",end:w.end||""})):[],
     segments:Array.isArray(t.segments)?t.segments.map(s=>({id:s.id||uid(),place:s.place||"",days:Math.max(1,parseInt(s.days)||1)})):[],
     itinerary:{days:Array.isArray(it.days)?it.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(s=>({time:s.time||"",name:s.name||"",type:s.type||"",area:s.area||"",note:s.note||""}))})):[],tips:Array.isArray(it.tips)?it.tips:[]},
     hotels:(t.hotels||[]).map(normItem),attractions:(t.attractions||[]).map(normItem),restaurants:(t.restaurants||[]).map(normItem),
@@ -1172,7 +1173,11 @@ function renderPlan(t,b){const dateDays=tripDays(t);
     <div class="plan-row" style="margin-top:8px"><input id="pCities" placeholder="想去的城市（可选，逗号分隔）" value="${esc(t.wishCities||"")}" style="flex:1;min-width:150px"></div>
     <div class="plan-row" style="margin-top:8px"><input id="pMust" placeholder="必去景点（可选，逗号分隔，会全部排入）" value="${esc(t.mustSee||"")}" style="flex:1;min-width:150px"></div>
     <div class="plan-row" style="margin-top:8px"><input id="pFood" placeholder="想去的餐厅（可选，逗号分隔，排进就近餐时）" value="${esc(t.wishFood||"")}" style="flex:1;min-width:150px"></div>
-    <div class="plan-row" style="margin-top:8px;align-items:center;flex-wrap:wrap"><span>每日可用</span><input id="pDayStart" type="time" value="${t.dayStart||""}" style="width:118px"><span>—</span><input id="pDayEnd" type="time" value="${t.dayEnd||""}" style="width:118px"><span class="ai-note" style="margin:0">不填默认 09:30–22:00</span></div>
+    <div class="plan-row" style="margin-top:8px;flex-direction:column;align-items:stretch;gap:6px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>每日可用时间</span><span class="ai-note" style="margin:0">默认每天 09:30–22:00，可单独给某天设不同时段</span></div>
+      <div id="dwList"></div>
+      <button class="btn" id="dwAdd" style="font-size:12px;padding:6px 10px;align-self:flex-start">+ 给某天设时段</button>
+    </div>
     <label class="plan-row" style="margin-top:10px;font-size:13px;color:var(--ink-soft);text-transform:none;letter-spacing:0;gap:8px;cursor:pointer"><input type="checkbox" id="pFlex" style="width:auto"> 🕊 灵活时间：只排必去点、每天留白，其余自动进「备选」由你手动填</label>
     <div class="plan-row" style="margin-top:10px">
       <button class="btn primary" id="pGo">✨ AI 规划路线</button>
@@ -1199,8 +1204,8 @@ function renderPlan(t,b){const dateDays=tripDays(t);
   $("#pCities").oninput=e=>{t.wishCities=e.target.value;markDirty()};
   $("#pMust").oninput=e=>{t.mustSee=e.target.value;markDirty()};
   $("#pFood").oninput=e=>{t.wishFood=e.target.value;markDirty()};
-  $("#pDayStart").onchange=e=>{t.dayStart=e.target.value;markDirty()};
-  $("#pDayEnd").onchange=e=>{t.dayEnd=e.target.value;markDirty()};
+  $("#dwAdd").onclick=()=>{t.dayWindows=t.dayWindows||[];t.dayWindows.push({day:"",start:"",end:""});markDirty();renderDwList(t)};
+  renderDwList(t);
   $("#pWeb").checked=state.web;$("#pWeb").onchange=e=>{state.web=e.target.checked};
   $("#pThink").checked=state.think;$("#pThink").onchange=e=>{state.think=e.target.checked};
   $("#pFlex").checked=!!t.flexible;$("#pFlex").onchange=e=>{t.flexible=e.target.checked;markDirty()};
@@ -1208,6 +1213,19 @@ function renderPlan(t,b){const dateDays=tripDays(t);
   renderItinerary(t,$("#planOut"));
   renderHistory(t,$("#planHist"));
   renderChat(t,$("#planChat"));
+}
+function renderDwList(t){
+  const host=document.getElementById("dwList"); if(!host)return;
+  const tot=segTotal(t)||99;
+  const ws=t.dayWindows||[];
+  host.innerHTML=ws.map((w,i)=>`<div class="dw-row" data-i="${i}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px"><span>第</span><input data-f="day" type="number" min="1" max="${tot}" value="${w.day||""}" placeholder="几" style="width:64px"><span>天</span><input data-f="start" type="time" value="${w.start||""}" style="width:118px"><span>—</span><input data-f="end" type="time" value="${w.end||""}" style="width:118px"><button class="del" data-del title="删除">✕</button></div>`).join("")
+    +(ws.length?"":`<span class="ai-note" style="margin:0">未单独设置，全程按默认 09:30–22:00</span>`);
+  host.querySelectorAll(".dw-row").forEach(row=>{const i=+row.dataset.i,w=t.dayWindows[i];
+    row.querySelector('[data-f="day"]').oninput=e=>{w.day=parseInt(e.target.value)||"";markDirty()};
+    row.querySelector('[data-f="start"]').onchange=e=>{w.start=e.target.value;markDirty()};
+    row.querySelector('[data-f="end"]').onchange=e=>{w.end=e.target.value;markDirty()};
+    row.querySelector("[data-del]").onclick=()=>{t.dayWindows.splice(i,1);markDirty();renderDwList(t)};
+  });
 }
 function renderHistory(t,box){if(!box)return;const h=t.history||[];
   if(!h.length){box.innerHTML="";return}
@@ -1298,7 +1316,8 @@ async function runPlan(t){const stat=$("#pStat");
   if(!segs.length){if(t.destination.trim())segs=[{place:t.destination.trim(),days:tripDays(t)||3}];else{toast("先填至少一段（城市+天数）",true);return}}
   const totalDays=segs.reduce((a,s)=>a+(s.days||1),0),pace=$("#pPace").value,intr=$("#pInt").value.trim();
   const wishCities=($("#pCities").value||"").trim(),mustSee=($("#pMust").value||"").trim(),wishFood=($("#pFood").value||"").trim();
-  const dayStart=($("#pDayStart").value||"").trim()||"09:30",dayEnd=($("#pDayEnd").value||"").trim()||"22:00";
+  const dwList=(t.dayWindows||[]).filter(w=>w.day&&(w.start||w.end)).map(w=>`第${w.day}天 ${w.start||"09:30"}–${w.end||"22:00"}`);
+  const dwText=dwList.length?dwList.join("、"):"";
   const model=$("#pModel").value||state.settings.planModel||"claude-sonnet-4-6";
   const mname={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-sonnet-4-6":"Sonnet 4.6","claude-opus-4-8":"Opus 4.8"}[model]||model;
   stat.innerHTML=`<span class="spin"></span> 规划中（${mname}）…`;$("#pGo").disabled=true;
@@ -1309,7 +1328,7 @@ async function runPlan(t){const stat=$("#pStat");
     +"2)餐厅安排在午/晚餐时段且靠近当时所在片区；3)顾及开放时间/营业日，热门点早去避峰，日落/夜景放傍晚；"
     +"4)相邻两段城市之间，在切换当天给出城际交通 stop(type=交通，注明高铁/航班/大巴及大致耗时)，当天其余安排放在出发前或抵达后就近处；"
     +"5)城内移动在 note 注明大致方式(地铁/步行/打车)与相邻点间大致时长。"
-    +`6)【每日时间窗】每天第一项不早于 ${dayStart}、最后一项结束不晚于 ${dayEnd}；排每个 stop 的 time 时，必须为相邻地点之间预留现实【交通时间】(市内地铁/步行/打车，城际高铁/航班)，把通勤时长算进去、让后一项的 time 顺延，不要把路上时间当成 0；据此判断一天(含交通)实际能装下多少，装不下就把多出的顺延到后续天`+(flex?"或放进 alternates":"")+"，不要硬塞超时。"
+    +`6)【每日时间窗】默认每天 09:30–22:00；`+(dwText?`其中用户单独指定的几天用其指定时段、其余天用默认（指定：${dwText}）。`:`所有天都用默认。`)+`每天第一项不早于该天起点、最后一项结束不晚于该天终点；排每个 stop 的 time 时，必须为相邻地点之间预留现实【交通时间】(市内地铁/步行/打车，城际高铁/航班)，把通勤时长算进去、让后一项的 time 顺延，不要把路上时间当成 0；据此判断一天(含交通)实际能装下多少，装不下就把多出的顺延到后续天`+(flex?"或放进 alternates":"")+"，不要硬塞超时。"
     +"7)【不走回头路】整条线路单向推进：同一天内按地理动线沿一个方向扫过各片区，不在已离开的片区之间来回折返；跨天也让相邻两天在空间上尽量连续衔接，整体走向呈单向，避免重复经过或返回同一区域。"
     +(mustSee?"8)【必去景点】用户列出的必去景点必须【全部】排入逐日行程，按地理就近放到合适的天与片区，不得遗漏或只丢进备选。":"")
     +(wishFood?"9)【指定餐厅】用户列出的餐厅尽量排进就近片区的午/晚餐时段。":"")
@@ -1321,7 +1340,7 @@ async function runPlan(t){const stat=$("#pStat");
     +"严格按分段顺序与天数分配每一天，day.place 标注当天城市。中文。给了起始日期则按真实日期填 date(YYYY-MM-DD)。"
     +(flex?"":"注意：用户另有「备选地点」清单由其自行管理，你不要在输出里包含 alternates，也不要替用户把点放进备选。")
     +(state.web?WEB_GUIDE:"");
-  const user=`分段（按顺序，共 ${totalDays} 天）：\n${segText}\n总目的地：${t.destination||segs.map(s=>s.place).join("、")}\n节奏：${pace}\n偏好：${intr||"通用"}\n每日可用时间：${dayStart}–${dayEnd}（排期含路上交通时间）\n`
+  const user=`分段（按顺序，共 ${totalDays} 天）：\n${segText}\n总目的地：${t.destination||segs.map(s=>s.place).join("、")}\n节奏：${pace}\n偏好：${intr||"通用"}\n每日可用时间：默认 09:30–22:00${dwText?`；特殊：${dwText}`:""}（排期含路上交通时间）\n`
     +(wishCities?`想去的城市：${wishCities}\n`:"")
     +(mustSee?`必去景点（必须全部排入）：${mustSee}\n`:"")
     +(wishFood?`想去的餐厅（排进就近餐时）：${wishFood}\n`:"")
