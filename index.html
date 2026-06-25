@@ -318,35 +318,36 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 <body>
 <div id="app">
   <div id="topbar">
-    <div class="brand"><span class="glyph serif">Life&nbsp;<em>Atlas</em></span><span class="sub">旅居 · 吃 · 喝</span></div>
-    <button class="btn btn-icon" id="railToggle" title="收起/展开城市列表">☰</button>
+    <div class="brand"><span class="glyph serif">Life&nbsp;<em>Atlas</em></span><span class="sub" data-i18n="brandSub">旅居 · 吃 · 喝</span></div>
+    <button class="btn btn-icon" id="railToggle" data-i18n-title="railToggleT" title="收起/展开城市列表">☰</button>
     <div class="spacer"></div>
     <div class="legend" id="legend">
-      <div class="item" data-f="resided"><span class="dot resided"></span>长居</div>
-      <div class="item" data-f="sojourned"><span class="dot sojourned"></span>旅居</div>
-      <div class="item" data-f="visited"><span class="dot visited"></span>去过</div>
+      <div class="item" data-f="resided"><span class="dot resided"></span><span data-i18n="st_resided">长居</span></div>
+      <div class="item" data-f="sojourned"><span class="dot sojourned"></span><span data-i18n="st_sojourned">旅居</span></div>
+      <div class="item" data-f="visited"><span class="dot visited"></span><span data-i18n="st_visited">去过</span></div>
     </div>
     <div class="status-pill" id="statusPill"><span class="led"></span><span id="statusTxt">未连接</span></div>
-    <button class="btn solid-y" id="tripsBtn">🧭 攻略</button>
-    <button class="btn solid-y" id="lbBtn">🏆 排行榜</button>
-    <button class="btn primary" id="saveBtn" disabled>保存</button>
-      <button class="btn" id="publishBtn" title="发布勾选了「公开展示」的城市到个人网站数据">🌐 发布公开</button>
-    <button class="btn btn-icon" id="settingsBtn" title="设置">⚙</button>
+    <button class="btn solid-y" id="tripsBtn" data-i18n="tripsBtn">🧭 攻略</button>
+    <button class="btn solid-y" id="lbBtn" data-i18n="lbBtn">🏆 排行榜</button>
+    <button class="btn primary" id="saveBtn" data-i18n="saveBtn" disabled>保存</button>
+      <button class="btn" id="publishBtn" data-i18n="publishBtn" data-i18n-title="publishBtnT" title="发布勾选了「公开展示」的城市到个人网站数据">🌐 发布公开</button>
+    <button class="btn btn-icon" id="langBtn" onclick="toggleLang()" title="中 / EN">EN</button>
+    <button class="btn btn-icon" id="settingsBtn" data-i18n-title="settingsT" title="设置">⚙</button>
   </div>
 
   <div id="map"></div>
-  <button class="btn" id="railOpen">☰ 我的城市</button>
+  <button class="btn" id="railOpen" data-i18n="railOpen">☰ 我的城市</button>
 
   <div id="rail">
     <div class="rail-head">
-      <h2 class="serif">我的城市</h2>
-      <button class="collapse-btn" id="collapseRail" title="收起">‹</button>
+      <h2 class="serif" data-i18n="myCities">我的城市</h2>
+      <button class="collapse-btn" id="collapseRail" data-i18n-title="collapseT" title="收起">‹</button>
     </div>
     <div class="search-wrap">
-      <input id="cityFilter" placeholder="输入城市名搜索…" autocomplete="off" />
+      <input id="cityFilter" data-i18n-ph="cityFilterPh" placeholder="输入城市名搜索…" autocomplete="off" />
       <div class="geo-results" id="geoResults" style="display:none"></div>
     </div>
-    <div class="add-hint">已记录城市即时筛选；新增就打城市名，从下拉点一下，自动定位并点亮所在省/地区。</div>
+    <div class="add-hint" data-i18n="addHint">已记录城市即时筛选；新增就打城市名，从下拉点一下，自动定位并点亮所在省/地区。</div>
     <div class="city-list" id="cityList"></div>
     <div class="rail-foot" id="counts"></div>
   </div>
@@ -360,9 +361,9 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
       <h1 class="serif" id="dName" contenteditable="true"></h1>
     </div>
     <div class="seg status" id="dStatus">
-      <button data-s="resided">长居</button><button data-s="sojourned">旅居</button><button data-s="visited">去过</button>
+      <button data-s="resided" data-i18n="st_resided">长居</button><button data-s="sojourned" data-i18n="st_sojourned">旅居</button><button data-s="visited" data-i18n="st_visited">去过</button>
     </div>
-    <button class="btn close-x" id="dClose">✕ 关闭</button>
+    <button class="btn close-x" id="dClose" data-i18n="dClose">✕ 关闭</button>
   </div>
   <div class="fs-body"><div class="fs-inner" id="detailBody"></div></div>
 </div>
@@ -370,17 +371,17 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 <!-- leaderboard full screen -->
 <div class="fs" id="lb">
   <div class="fs-head">
-    <h1 class="serif">🏆 排行榜</h1>
+    <h1 class="serif" data-i18n="lbTitle">🏆 排行榜</h1>
     <div class="spacer"></div>
-    <div class="seg" id="lbScope"><button data-s="total" class="on">总榜</button><button data-s="region">分地区</button></div>
+    <div class="seg" id="lbScope"><button data-s="total" class="on" data-i18n="lbTotal">总榜</button><button data-s="region" data-i18n="lbRegion">分地区</button></div>
     <select id="lbCity" style="display:none;max-width:180px"></select>
-    <button class="btn close-x" id="lbClose">✕ 关闭</button>
+    <button class="btn close-x" id="lbClose" data-i18n="dClose">✕ 关闭</button>
   </div>
   <div class="fs-body"><div class="fs-inner">
     <div class="lb-cols">
-      <div class="lb-col rest"><div class="lb-col-head"><span class="ico">🍽</span><span>餐厅</span></div><div class="lb-list" id="lbRest"></div></div>
+      <div class="lb-col rest"><div class="lb-col-head"><span class="ico">🍽</span><span data-i18n="lbRest">餐厅</span></div><div class="lb-list" id="lbRest"></div></div>
       <div class="lb-col bar"><div class="lb-col-head"><span class="ico">🍸</span><span>Bar</span></div><div class="lb-list" id="lbBar"></div></div>
-      <div class="lb-col chain"><div class="lb-col-head"><span class="ico">🔗</span><span>连锁</span></div><div class="lb-list" id="lbChain"></div></div>
+      <div class="lb-col chain"><div class="lb-col-head"><span class="ico">🔗</span><span data-i18n="lbChain">连锁</span></div><div class="lb-list" id="lbChain"></div></div>
     </div>
   </div></div>
 </div>
@@ -388,10 +389,10 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 <!-- trips / 攻略 full screen -->
 <div class="fs" id="trips">
   <div class="fs-head">
-    <h1 class="serif">🧭 旅游攻略</h1>
+    <h1 class="serif" data-i18n="tripsTitle">🧭 旅游攻略</h1>
     <div class="spacer"></div>
-    <button class="btn primary" id="tripNew">+ 新建行程</button>
-    <button class="btn close-x" id="tripsClose">✕ 关闭</button>
+    <button class="btn primary" id="tripNew" data-i18n="tripNew">+ 新建行程</button>
+    <button class="btn close-x" id="tripsClose" data-i18n="dClose">✕ 关闭</button>
   </div>
   <div class="fs-body"><div class="trip-wrap">
     <div class="trip-rail" id="tripRail"></div>
@@ -402,36 +403,36 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 <!-- settings -->
 <div class="overlay" id="overlay">
   <div class="modal">
-    <h2 class="serif">连接你的私有数据</h2>
-    <p class="lede">应用代码在公开 repo，个人数据在<b>私有 repo 的 <span class="mono">life.json</span></b>。以下只存本机浏览器。
+    <h2 class="serif" data-i18n="setH2">连接你的私有数据</h2>
+    <p class="lede" id="setLede">应用代码在公开 repo，个人数据在<b>私有 repo 的 <span class="mono">life.json</span></b>。以下只存本机浏览器。
       需要 GitHub <b>Fine-grained token</b>，对该私有 repo 授予 <b>Contents: Read and write</b>。
       <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">创建 →</a></p>
-    <div class="field"><label>仓库 Owner</label><input id="setOwner" placeholder="yourname"></div>
-    <div class="field"><label>私有仓库名</label><input id="setRepo" placeholder="my-private-data"></div>
-    <div class="field"><label>文件路径</label><input id="setPath" value="life.json"></div>
-    <div class="field"><label>Fine-grained Token</label><input id="setToken" type="password" placeholder="github_pat_…"></div>
-    <div class="field"><label>Anthropic API Key（攻略 AI 规划用，可留空）</label><input id="setAiKey" type="password" placeholder="sk-ant-…">
-      <div class="hint">仅存本机浏览器，调 Anthropic API 时直接从浏览器发送（个人自用）。不填则攻略页的「AI 规划路线」不可用，其余跟踪/记账功能照常。</div></div>
-    <div class="field"><label>路线规划模型</label>
+    <div class="field"><label data-i18n="setOwnerL">仓库 Owner</label><input id="setOwner" placeholder="yourname"></div>
+    <div class="field"><label data-i18n="setRepoL">私有仓库名</label><input id="setRepo" placeholder="my-private-data"></div>
+    <div class="field"><label data-i18n="setPathL">文件路径</label><input id="setPath" value="life.json"></div>
+    <div class="field"><label data-i18n="setTokenL">Fine-grained Token</label><input id="setToken" type="password" placeholder="github_pat_…"></div>
+    <div class="field"><label data-i18n="setAiL">Anthropic API Key（攻略 AI 规划用，可留空）</label><input id="setAiKey" type="password" placeholder="sk-ant-…">
+      <div class="hint" data-i18n="setAiHint">仅存本机浏览器，调 Anthropic API 时直接从浏览器发送（个人自用）。不填则攻略页的「AI 规划路线」不可用，其余跟踪/记账功能照常。</div></div>
+    <div class="field"><label data-i18n="setModelL">路线规划模型</label>
       <select id="setPlanModel"><option value="claude-haiku-4-5-20251001">Haiku 4.5（快/省，简单行程）</option><option value="claude-sonnet-4-6">Sonnet 4.6（推荐，路线规划）</option><option value="claude-opus-4-8">Opus 4.8（最强，复杂多城）</option></select></div>
-    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="setWebSearch" style="width:auto"> 允许 AI 联网搜索（取实时信息，如开放时间/票价/天气；按次计费）</label></div>
-    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="setThinking" style="width:auto"> AI 深度思考（extended thinking，仅 Sonnet/Opus 生效；更聪明但更慢、思考也计费）</label></div>
-    <div class="field"><label>城市评分维度（4–6）</label><div class="dims-edit" id="dimsEdit"></div>
-      <button class="btn" id="addDim" style="font-size:12px;padding:6px 10px">+ 维度</button></div>
-    <div class="field"><label>「其他店铺」类型</label><div class="dims-edit" id="otypesEdit"></div>
-      <button class="btn" id="addOtype" style="font-size:12px;padding:6px 10px">+ 类型</button>
-      <div class="hint">emoji + 名称。改名/删除不丢已记录的店（按名称显示）。</div></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="setWebSearch" style="width:auto"> <span data-i18n="setWebL">允许 AI 联网搜索（取实时信息，如开放时间/票价/天气；按次计费）</span></label></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="setThinking" style="width:auto"> <span data-i18n="setThinkL">AI 深度思考（extended thinking，仅 Sonnet/Opus 生效；更聪明但更慢、思考也计费）</span></label></div>
+    <div class="field"><label data-i18n="setDimsL">城市评分维度（4–6）</label><div class="dims-edit" id="dimsEdit"></div>
+      <button class="btn" id="addDim" data-i18n="addDim" style="font-size:12px;padding:6px 10px">+ 维度</button></div>
+    <div class="field"><label data-i18n="setOtypesL">「其他店铺」类型</label><div class="dims-edit" id="otypesEdit"></div>
+      <button class="btn" id="addOtype" data-i18n="addOtype" style="font-size:12px;padding:6px 10px">+ 类型</button>
+      <div class="hint" data-i18n="otypesHint">emoji + 名称。改名/删除不丢已记录的店（按名称显示）。</div></div>
     <div class="warn" id="setWarn"></div>
-    <div class="modal-foot"><button class="btn" id="cancelSet">取消</button><button class="btn primary" id="connectBtn">连接并加载</button></div>
+    <div class="modal-foot"><button class="btn" id="cancelSet" data-i18n="cancelSet">取消</button><button class="btn primary" id="connectBtn" data-i18n="connectBtn">连接并加载</button></div>
   </div>
 </div>
 
 <div class="overlay" id="exportOverlay">
   <div class="modal">
-    <h2 class="serif">省流版路线</h2>
-    <p class="lede">只含大概路线，已去掉时间 / 备注 / 交通 / 提示等细节，方便复制或下载发给朋友。</p>
+    <h2 class="serif" data-i18n="expH2">省流版路线</h2>
+    <p class="lede" data-i18n="expLede">只含大概路线，已去掉时间 / 备注 / 交通 / 提示等细节，方便复制或下载发给朋友。</p>
     <textarea id="exportText" readonly style="height:300px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7"></textarea>
-    <div class="modal-foot"><button class="btn" id="exportClose">关闭</button><button class="btn" id="exportImg">🖼 导出长图</button><button class="btn" id="exportDl">下载 .txt</button><button class="btn primary" id="exportCopy">复制</button></div>
+    <div class="modal-foot"><button class="btn" id="exportClose" data-i18n="expClose">关闭</button><button class="btn" id="exportImg" data-i18n="expImg">🖼 导出长图</button><button class="btn" id="exportDl" data-i18n="expDl">下载 .txt</button><button class="btn primary" id="exportCopy" data-i18n="expCopy">复制</button></div>
   </div>
 </div>
 
@@ -440,10 +441,86 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 <script>
 "use strict";
 const DEFAULT_DIMS=["美食","气候环境","性价比","交通便利","安全感","综合宜居"];
-const STATUS_META={resided:{label:"长居",color:"var(--resided)",rank:0},sojourned:{label:"旅居",color:"var(--sojourned)",rank:1},visited:{label:"去过",color:"var(--visited)",rank:2}};
+const STATUS_META={resided:{label:"长居",en:"Resided",color:"var(--resided)",rank:0},sojourned:{label:"旅居",en:"Sojourned",color:"var(--sojourned)",rank:1},visited:{label:"去过",en:"Visited",color:"var(--visited)",rank:2}};
 const STATUS_HEX={resided:"#ff2d76",sojourned:"#00b8a6",visited:"#ff8c1a"};
 const COCKTAIL_LEVELS=["tried","liked","loved"];
 const DEFAULT_OTHER_TYPES=[{label:"咖啡/茶",emoji:"☕"},{label:"甜品/烘焙",emoji:"🍰"},{label:"桌游",emoji:"🎲"},{label:"密室逃脱",emoji:"🔓"},{label:"剧本杀",emoji:"🕵️"},{label:"足浴按摩",emoji:"💆"},{label:"水疗温泉",emoji:"♨️"},{label:"KTV",emoji:"🎤"},{label:"美发沙龙",emoji:"💇"},{label:"健身运动",emoji:"🏋️"},{label:"酒店",emoji:"🏨"},{label:"其他",emoji:"📍"}];
+/* ============================ 双语 i18n（全站共享 pha-lang，默认 zh） ============================ */
+let lang=(()=>{try{return localStorage.getItem("pha-lang")==="en"?"en":"zh";}catch(e){return "zh";}})();
+const T=(zh,en)=>lang==="en"?en:zh;
+// 让 AI 的自然语言输出跟随当前界面语言（附加在 system prompt 末尾；zh 模式追加空串=不改变原行为）
+const AILANG=()=>lang==="en"?"\n\nIMPORTANT: Write ALL natural-language output (the summary line, replies, day titles, place names, areas, notes, tips) in ENGLISH. Keep the JSON structure/keys exactly as specified.":"";
+const stLabel=st=>{const m=STATUS_META[st];return m?(lang==="en"?m.en:m.label):st;};
+// 静态文案（topbar / 静态按钮 / 弹窗里不随 render 重绘的部分）
+const I18N={
+  brandSub:{zh:"旅居 · 吃 · 喝",en:"Live · Eat · Drink"},
+  railToggleT:{zh:"收起/展开城市列表",en:"Collapse/expand city list"},
+  st_resided:{zh:"长居",en:"Resided"},
+  st_sojourned:{zh:"旅居",en:"Sojourned"},
+  st_visited:{zh:"去过",en:"Visited"},
+  tripsBtn:{zh:"🧭 攻略",en:"🧭 Trips"},
+  lbBtn:{zh:"🏆 排行榜",en:"🏆 Leaderboard"},
+  saveBtn:{zh:"保存",en:"Save"},
+  publishBtn:{zh:"🌐 发布公开",en:"🌐 Publish"},
+  publishBtnT:{zh:"发布勾选了「公开展示」的城市到个人网站数据",en:"Publish cities marked “public” to your site data"},
+  settingsT:{zh:"设置",en:"Settings"},
+  langBtn:{zh:"EN",en:"中"},
+  myCities:{zh:"我的城市",en:"My Cities"},
+  collapseT:{zh:"收起",en:"Collapse"},
+  cityFilterPh:{zh:"输入城市名搜索…",en:"Search city name…"},
+  addHint:{zh:"已记录城市即时筛选；新增就打城市名，从下拉点一下，自动定位并点亮所在省/地区。",en:"Recorded cities filter instantly; to add, type a city name, pick from the dropdown — it auto-locates and lights up its province/region."},
+  railOpen:{zh:"☰ 我的城市",en:"☰ My Cities"},
+  dClose:{zh:"✕ 关闭",en:"✕ Close"},
+  lbTitle:{zh:"🏆 排行榜",en:"🏆 Leaderboard"},
+  lbTotal:{zh:"总榜",en:"Overall"},
+  lbRegion:{zh:"分地区",en:"By region"},
+  lbRest:{zh:"餐厅",en:"Restaurants"},
+  lbChain:{zh:"连锁",en:"Chains"},
+  tripsTitle:{zh:"🧭 旅游攻略",en:"🧭 Travel Plans"},
+  tripNew:{zh:"+ 新建行程",en:"+ New trip"},
+  setH2:{zh:"连接你的私有数据",en:"Connect your private data"},
+  setOwnerL:{zh:"仓库 Owner",en:"Repo owner"},
+  setRepoL:{zh:"私有仓库名",en:"Private repo name"},
+  setPathL:{zh:"文件路径",en:"File path"},
+  setTokenL:{zh:"Fine-grained Token",en:"Fine-grained Token"},
+  setAiL:{zh:"Anthropic API Key（攻略 AI 规划用，可留空）",en:"Anthropic API Key (for AI trip planning, optional)"},
+  setAiHint:{zh:"仅存本机浏览器，调 Anthropic API 时直接从浏览器发送（个人自用）。不填则攻略页的「AI 规划路线」不可用，其余跟踪/记账功能照常。",en:"Stored only in this browser, sent directly to the Anthropic API from here (personal use). Leave blank and only the AI route planner is disabled; tracking/expenses still work."},
+  setModelL:{zh:"路线规划模型",en:"Route-planning model"},
+  setWebL:{zh:"允许 AI 联网搜索（取实时信息，如开放时间/票价/天气；按次计费）",en:"Allow AI web search (live info like hours/prices/weather; billed per use)"},
+  setThinkL:{zh:"AI 深度思考（extended thinking，仅 Sonnet/Opus 生效；更聪明但更慢、思考也计费）",en:"AI extended thinking (Sonnet/Opus only; smarter but slower, thinking is also billed)"},
+  setDimsL:{zh:"城市评分维度（4–6）",en:"City scoring dimensions (4–6)"},
+  addDim:{zh:"+ 维度",en:"+ Dimension"},
+  setOtypesL:{zh:"「其他店铺」类型",en:"“Other venue” types"},
+  addOtype:{zh:"+ 类型",en:"+ Type"},
+  otypesHint:{zh:"emoji + 名称。改名/删除不丢已记录的店（按名称显示）。",en:"emoji + name. Renaming/deleting won’t lose recorded venues (shown by name)."},
+  cancelSet:{zh:"取消",en:"Cancel"},
+  connectBtn:{zh:"连接并加载",en:"Connect & load"},
+  expH2:{zh:"省流版路线",en:"Lite route"},
+  expLede:{zh:"只含大概路线，已去掉时间 / 备注 / 交通 / 提示等细节，方便复制或下载发给朋友。",en:"Rough route only — times / notes / transport / tips stripped out, easy to copy or download for friends."},
+  expClose:{zh:"关闭",en:"Close"},
+  expImg:{zh:"🖼 导出长图",en:"🖼 Export image"},
+  expDl:{zh:"下载 .txt",en:"Download .txt"},
+  expCopy:{zh:"复制",en:"Copy"},
+};
+const Ls=k=>(I18N[k]||{zh:k,en:k})[lang];
+function applyStatic(){
+  document.documentElement.lang=lang==="en"?"en":"zh";
+  document.title=lang==="en"?"Life Atlas · Travel & Food Log":"Life Atlas · 旅居与吃喝记录";
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=Ls(el.dataset.i18n);});
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{el.placeholder=Ls(el.dataset.i18nPh);});
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{el.title=Ls(el.dataset.i18nTitle);});
+  const lb=document.getElementById("langBtn"); if(lb) lb.textContent=Ls("langBtn");
+}
+function toggleLang(){
+  lang=lang==="en"?"zh":"en";
+  try{localStorage.setItem("pha-lang",lang);}catch(e){}
+  applyStatic(); updateStatus(); renderList();
+  if($("#detail").classList.contains("open"))renderDetail();
+  if($("#lb").classList.contains("open")){lbPopulateCities();renderLB();}
+  if($("#trips").classList.contains("open")){renderTripRail();renderTripMain();}
+  if($("#overlay").classList.contains("open"))openSettings();
+}
+
 const WEB_GUIDE="\n联网搜索规范：① 只在需要时搜索【必去景点 / 必玩项目 / 必吃美食 / 注意事项 / 大致票价·班次·营业时间】这类通用攻略信息；不要为某一天的逐日具体安排、实时定位或精确到某日的信息去搜索。② 搜索时【优先参考小红书】的真实攻略——查询里带上\"小红书\"或\"xhs\"关键词，优先采用其内容；小红书查不到或不足时再用其他来源补充。③ 【只采用 2024 年及以后发布/更新的信息】：查询里带上年份（如 2025、2026）确保时效；遇到 2023 年及更早的内容一律忽略，不要据此作答。引用信息尽量注明大概来源与年份。";
 
 const state={
@@ -525,32 +602,32 @@ map.on("zoomend",renderMarkers);
 
 /* ---------------- DATA ---------------- */
 function newCity(p){const sc={};dims().forEach(d=>sc[d]=p.scores?.[d]??5);
-  return{id:uid(),name:p.name||"未命名",country:p.country||"",lat:p.lat,lng:p.lng,status:p.status||"visited",public:false,scores:sc,guide:"",attractions:"",review:"",notes:"",restaurants:[],bars:[],others:[]}}
+  return{id:uid(),name:p.name||T("未命名","Untitled"),country:p.country||"",lat:p.lat,lng:p.lng,status:p.status||"visited",public:false,scores:sc,guide:"",attractions:"",review:"",notes:"",restaurants:[],bars:[],others:[]}}
 function getCity(id){return state.data.cities.find(c=>c.id===id)}
 function markDirty(){state.dirty=true;updateStatus()}
 function cityAvg(c){const v=dims().map(d=>c.scores?.[d]).filter(x=>typeof x==="number");return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
 function addCity(p){const c=newCity(p);state.data.cities.push(c);markDirty();refreshMap();renderList();
-  if(typeof c.lat==="number")map.flyTo([c.lat,c.lng],Math.max(map.getZoom(),5),{duration:.8});openCity(c.id);toast("已添加 "+c.name)}
+  if(typeof c.lat==="number")map.flyTo([c.lat,c.lng],Math.max(map.getZoom(),5),{duration:.8});openCity(c.id);toast(T("已添加 ","Added ")+c.name)}
 
 /* ---------------- CITY LIST ---------------- */
 function renderList(){
   const list=$("#cityList"),q=$("#cityFilter").value.trim().toLowerCase();
-  if(!state.loaded){list.innerHTML=`<div class="empty">尚未连接数据。<br>点右上 <b>⚙</b> 填私有仓库与 token，<br>加载 / 创建 <span class="mono">life.json</span>。</div>`;$("#counts").innerHTML="";return}
+  if(!state.loaded){list.innerHTML=`<div class="empty">${T('尚未连接数据。<br>点右上 <b>⚙</b> 填私有仓库与 token，<br>加载 / 创建 <span class="mono">life.json</span>。','Not connected yet.<br>Click <b>⚙</b> at top-right to enter your private repo & token,<br>then load / create <span class="mono">life.json</span>.')}</div>`;$("#counts").innerHTML="";return}
   const all=state.data.cities.filter(c=>state.filters[c.status]).filter(c=>!q||c.name.toLowerCase().includes(q)||(c.country||"").toLowerCase().includes(q));
   let html="";
   ["resided","sojourned","visited"].forEach(st=>{
     const rows=all.filter(c=>c.status===st).sort((a,b)=>byPinyin(a.name,b.name));
     if(!rows.length)return;
-    html+=`<div class="tier ${st}"><span class="tdot"></span>${STATUS_META[st].label} · ${rows.length}</div>`;
+    html+=`<div class="tier ${st}"><span class="tdot"></span>${stLabel(st)} · ${rows.length}</div>`;
     html+=rows.map(c=>{const avg=cityAvg(c);return `<div class="city-row ${c.id===state.selectedId?'active':''}" data-id="${c.id}">
       <span class="mk" style="background:${STATUS_META[c.status].color}"></span>
       <span class="nm"><b>${esc(c.name)}</b><span>${esc(c.country||"")}</span></span>
       <span class="sc">${avg!=null?avg.toFixed(1):"–"}</span></div>`}).join("");
   });
-  list.innerHTML=html||`<div class="empty">没有匹配的城市。<br>输入城市名从下拉添加。</div>`;
+  list.innerHTML=html||`<div class="empty">${T('没有匹配的城市。<br>输入城市名从下拉添加。','No matching cities.<br>Type a city name to add from the dropdown.')}</div>`;
   list.querySelectorAll(".city-row").forEach(r=>r.onclick=()=>openCity(r.dataset.id));
   const t={resided:0,sojourned:0,visited:0};state.data.cities.forEach(c=>t[c.status]!=null&&t[c.status]++);
-  $("#counts").innerHTML=`<span><b>${t.resided}</b> 长居</span><span><b>${t.sojourned}</b> 旅居</span><span><b>${t.visited}</b> 去过</span>`;
+  $("#counts").innerHTML=`<span><b>${t.resided}</b> ${stLabel("resided")}</span><span><b>${t.sojourned}</b> ${stLabel("sojourned")}</span><span><b>${t.visited}</b> ${stLabel("visited")}</span>`;
 }
 
 /* ---------------- RADAR ---------------- */
@@ -570,36 +647,36 @@ function openCity(id){state.selectedId=id;const c=getCity(id);if(!c)return;
 function closeDetail(){state.selectedId=null;$("#detail").classList.remove("open");renderList()}
 
 function isUnrated(e){return e.rating===null||e.rating===undefined||e.rating===""}
-function unratedCount(l){const n=l.filter(isUnrated).length;return n?` · ${n} 待评分`:""}
+function unratedCount(l){const n=l.filter(isUnrated).length;return n?` · ${n} ${T("待评分","unrated")}`:""}
 
 function catSelectHTML(cur){const o=otherTypes().map(t=>`<option value="${esc(t.label)}" ${t.label===cur?"selected":""}>${t.emoji} ${esc(t.label)}</option>`).join("");
-  return `<select class="cat-sel" data-f="cat"><option value="__rest__" ${cur==="__rest__"?"selected":""}>🍽 餐厅</option><option value="__bar__" ${cur==="__bar__"?"selected":""}>🍸 Bar</option><optgroup label="其他">${o}</optgroup></select>`}
+  return `<select class="cat-sel" data-f="cat"><option value="__rest__" ${cur==="__rest__"?"selected":""}>🍽 ${T("餐厅","Restaurant")}</option><option value="__bar__" ${cur==="__bar__"?"selected":""}>🍸 Bar</option><optgroup label="${T("其他","Other")}">${o}</optgroup></select>`}
 
 function vRowHTML(e,kind,curcat){return `<tr class="vrow" data-eid="${e.id}" data-kind="${kind}">
   <td class="c-cat">${catSelectHTML(curcat)}</td>
-  <td><span class="nm-cell" contenteditable="true" data-f="name">${esc(e.name)}</span>${isUnrated(e)?'<span class="badge-unrated">待评分</span>':""}</td>
+  <td><span class="nm-cell" contenteditable="true" data-f="name">${esc(e.name)}</span>${isUnrated(e)?`<span class="badge-unrated">${T("待评分","unrated")}</span>`:""}</td>
   <td class="c-score"><input class="rate-in" type="number" min="0" max="10" step="0.5" value="${e.rating??""}" data-f="rating" placeholder="–"></td>
-  <td><input class="note-in" type="text" value="${esc(e.note||"")}" data-f="note" placeholder="备注…"></td>
+  <td><input class="note-in" type="text" value="${esc(e.note||"")}" data-f="note" placeholder="${T("备注…","Note…")}"></td>
   <td class="c-del"><button class="del" data-del="1">✕</button></td></tr>`}
 
 function tableHTML(rows,kind,catOf){
-  if(!rows.length)return `<div class="tbl-empty">暂无。用上方一栏添加。</div>`;
-  return `<table class="vtbl"><thead><tr><th class="c-cat">类别</th><th>名称</th><th class="c-score">评分</th><th>备注</th><th class="c-del"></th></tr></thead>
+  if(!rows.length)return `<div class="tbl-empty">${T("暂无。用上方一栏添加。","None yet. Add from the row above.")}</div>`;
+  return `<table class="vtbl"><thead><tr><th class="c-cat">${T("类别","Category")}</th><th>${T("名称","Name")}</th><th class="c-score">${T("评分","Rating")}</th><th>${T("备注","Note")}</th><th class="c-del"></th></tr></thead>
     <tbody>${rows.map(e=>vRowHTML(e,kind,catOf(e))).join("")}</tbody></table>`}
 
 function chipHTML(ck){const star=ck.level==="loved"?"★":(ck.level==="liked"?"☆":"");
-  return `<span class="chip" data-lvl="${ck.level}" data-ckid="${ck.id}" title="点击切换喜欢度">${ck.food?'<span class="meat">菜</span>':""}${star?`<span class="star">${star}</span>`:""}${esc(ck.name)}<span class="x" data-ckdel="1">✕</span></span>`}
+  return `<span class="chip" data-lvl="${ck.level}" data-ckid="${ck.id}" title="${T("点击切换喜欢度","Click to cycle preference")}">${ck.food?`<span class="meat">${T("菜","food")}</span>`:""}${star?`<span class="star">${star}</span>`:""}${esc(ck.name)}<span class="x" data-ckdel="1">✕</span></span>`}
 
 function barCardHTML(b){return `<div class="bar-card" data-eid="${b.id}" data-kind="bar">
   <div class="bar-line">${catSelectHTML("__bar__")}
-    <span class="nm-cell" contenteditable="true" data-f="name">${esc(b.name)}</span>${isUnrated(b)?'<span class="badge-unrated">待评分</span>':""}
+    <span class="nm-cell" contenteditable="true" data-f="name">${esc(b.name)}</span>${isUnrated(b)?`<span class="badge-unrated">${T("待评分","unrated")}</span>`:""}
     <input class="barscore" type="number" min="0" max="10" step="0.5" value="${b.rating??""}" data-f="rating" placeholder="–">
-    <input class="note-in" type="text" value="${esc(b.note||"")}" data-f="note" placeholder="备注…" style="max-width:170px">
+    <input class="note-in" type="text" value="${esc(b.note||"")}" data-f="note" placeholder="${T("备注…","Note…")}" style="max-width:170px">
     <button class="del" data-del="1">✕</button></div>
   <div class="bar-ck">
-    <div class="ck-hint">cocktail（点击循环：默认 → <b>喜欢</b> → <i>特别喜欢</i>）· <span class="meat" style="font-size:9px">菜</span>=菜品</div>
+    <div class="ck-hint">${T('cocktail（点击循环：默认 → <b>喜欢</b> → <i>特别喜欢</i>）· <span class="meat" style="font-size:9px">菜</span>=菜品','cocktail (click to cycle: default → <b>liked</b> → <i>loved</i>) · <span class="meat" style="font-size:9px">food</span>=dish')}</div>
     <div class="chips">${(b.cocktails||[]).map(chipHTML).join("")}</div>
-    <input class="ck-add" data-addck placeholder="cocktail 名，回车添加" style="font-size:12px">
+    <input class="ck-add" data-addck placeholder="${T("cocktail 名，回车添加","cocktail name, Enter to add")}" style="font-size:12px">
   </div></div>`}
 
 function renderDetail(){
@@ -611,30 +688,30 @@ function renderDetail(){
   const otOrder=otherTypes().map(t=>t.label);
   const others=[...c.others].sort((a,b)=>{const ai=otOrder.indexOf(a.type),bi=otOrder.indexOf(b.type);return (ai<0?99:ai)-(bi<0?99:bi)||(b.rating||0)-(a.rating||0)||byPinyin(a.name,b.name)});
   $("#detailBody").innerHTML=`
-    <label class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px"><input type="checkbox" id="edPublic" ${c.public?"checked":""}> <b>公开展示</b> <span style="opacity:.6;font-size:12px">勾选后「发布公开」会包含此城市（仅 名称/国家/状态/坐标/评价）</span></label>
-    <div class="card"><h3>城市评分 <span class="avg">${avg!=null?avg.toFixed(1)+" / 10":""}</span></h3>
+    <label class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:12px"><input type="checkbox" id="edPublic" ${c.public?"checked":""}> <b>${T("公开展示","Public")}</b> <span style="opacity:.6;font-size:12px">${T("勾选后「发布公开」会包含此城市（仅 名称/国家/状态/坐标/评价）","When checked, “Publish” includes this city (name/country/status/coords/review only)")}</span></label>
+    <div class="card"><h3>${T("城市评分","City scores")} <span class="avg">${avg!=null?avg.toFixed(1)+" / 10":""}</span></h3>
       <div class="score-grid"><div>${radarSVG(c)}</div>
         <div class="scores">${ds.map(d=>{const v=c.scores?.[d]??0;return `<div class="score-item"><span class="lab">${esc(d)}</span>
           <input type="range" min="0" max="10" step="0.5" value="${v}" data-dim="${esc(d)}" style="--p:${v*10}%">
           <span class="val" data-valfor="${esc(d)}">${(+v).toFixed(1)}</span></div>`}).join("")}</div>
       </div></div>
-    <div class="card"><h3>攻略 · 必去 · 评价</h3>
+    <div class="card"><h3>${T("攻略 · 必去 · 评价","Guide · Must-see · Review")}</h3>
       <div class="fields">
-        <div class="full"><label>必去景点</label><textarea id="edAttr" placeholder="清单 / 标志性地点…">${esc(c.attractions)}</textarea></div>
-        <div><label>攻略 / tips</label><textarea id="edGuide" placeholder="交通、签证、住宿、避坑…">${esc(c.guide)}</textarea></div>
-        <div><label>评价</label><textarea id="edReview" placeholder="整体感受…">${esc(c.review)}</textarea></div>
-        <div class="full"><label>备注</label><textarea id="edNotes" placeholder="其他备注…">${esc(c.notes)}</textarea></div>
+        <div class="full"><label>${T("必去景点","Must-see")}</label><textarea id="edAttr" placeholder="${T("清单 / 标志性地点…","List / landmark spots…")}">${esc(c.attractions)}</textarea></div>
+        <div><label>${T("攻略 / tips","Guide / tips")}</label><textarea id="edGuide" placeholder="${T("交通、签证、住宿、避坑…","Transport, visa, lodging, pitfalls…")}">${esc(c.guide)}</textarea></div>
+        <div><label>${T("评价","Review")}</label><textarea id="edReview" placeholder="${T("整体感受…","Overall impression…")}">${esc(c.review)}</textarea></div>
+        <div class="full"><label>${T("备注","Notes")}</label><textarea id="edNotes" placeholder="${T("其他备注…","Other notes…")}">${esc(c.notes)}</textarea></div>
       </div></div>
-    <div class="add-bar"><span class="tag">添加</span>
-      <select id="addCat"><option value="__rest__">🍽 餐厅</option><option value="__bar__">🍸 Bar</option><optgroup label="其他">${otherTypes().map(t=>`<option value="${esc(t.label)}">${t.emoji} ${esc(t.label)}</option>`).join("")}</optgroup></select>
-      <input id="addName" placeholder="店名，回车添加"><button class="btn primary" id="addBtn">添加</button></div>
-    <div class="card"><h3>🍽 餐厅 <span class="avg">${c.restaurants.length} 家${unratedCount(c.restaurants)}</span></h3>
+    <div class="add-bar"><span class="tag">${T("添加","Add")}</span>
+      <select id="addCat"><option value="__rest__">🍽 ${T("餐厅","Restaurant")}</option><option value="__bar__">🍸 Bar</option><optgroup label="${T("其他","Other")}">${otherTypes().map(t=>`<option value="${esc(t.label)}">${t.emoji} ${esc(t.label)}</option>`).join("")}</optgroup></select>
+      <input id="addName" placeholder="${T("店名，回车添加","Venue name, Enter to add")}"><button class="btn primary" id="addBtn">${T("添加","Add")}</button></div>
+    <div class="card"><h3>🍽 ${T("餐厅","Restaurants")} <span class="avg">${c.restaurants.length} ${T("家","")}${unratedCount(c.restaurants)}</span></h3>
       ${tableHTML([...c.restaurants].sort((a,b)=>(b.rating||0)-(a.rating||0)||byPinyin(a.name,b.name)),"rest",()=> "__rest__")}</div>
-    <div class="card"><h3>🍸 Bar <span class="avg">${c.bars.length} 家${unratedCount(c.bars)}</span></h3>
-      ${c.bars.length?[...c.bars].sort((a,b)=>(b.rating||0)-(a.rating||0)||byPinyin(a.name,b.name)).map(barCardHTML).join(""):'<div class="tbl-empty">暂无。用上方一栏添加（选 Bar）。</div>'}</div>
-    <div class="card"><h3>其他店铺 <span class="avg">${c.others.length} 家${unratedCount(c.others)}</span></h3>
+    <div class="card"><h3>🍸 Bar <span class="avg">${c.bars.length} ${T("家","")}${unratedCount(c.bars)}</span></h3>
+      ${c.bars.length?[...c.bars].sort((a,b)=>(b.rating||0)-(a.rating||0)||byPinyin(a.name,b.name)).map(barCardHTML).join(""):`<div class="tbl-empty">${T("暂无。用上方一栏添加（选 Bar）。","None yet. Add from the row above (choose Bar).")}</div>`}</div>
+    <div class="card"><h3>${T("其他店铺","Other venues")} <span class="avg">${c.others.length} ${T("家","")}${unratedCount(c.others)}</span></h3>
       ${tableHTML(others,"other",e=>e.type)}</div>
-    <div class="card"><button class="btn" id="delCity" style="color:var(--resided);border-color:var(--resided)">删除该城市</button></div>`;
+    <div class="card"><button class="btn" id="delCity" style="color:var(--resided);border-color:var(--resided)">${T("删除该城市","Delete this city")}</button></div>`;
   wireDetail(c);
 }
 
@@ -646,7 +723,7 @@ function moveEntry(c,fromKind,eid,val){
   c[tgt].push(e);markDirty();renderDetail()}
 
 function wireDetail(c){
-  $("#dName").onblur=e=>{c.name=e.target.textContent.trim()||"未命名";markDirty();renderList();refreshMap()};
+  $("#dName").onblur=e=>{c.name=e.target.textContent.trim()||T("未命名","Untitled");markDirty();renderList();refreshMap()};
   $("#dStatus").querySelectorAll("button").forEach(b=>b.onclick=()=>{c.status=b.dataset.s;markDirty();renderDetail();renderList();refreshMap()});
   $("#detailBody").querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener("input",e=>{
     const d=e.target.dataset.dim,v=parseFloat(e.target.value);c.scores[d]=v;e.target.style.setProperty("--p",v*10+"%");
@@ -677,7 +754,7 @@ function wireDetail(c){
           ck.level=COCKTAIL_LEVELS[(COCKTAIL_LEVELS.indexOf(ck.level)+1)%3];markDirty();renderDetail()})});
     }
   });
-  $("#delCity").onclick=()=>{if(!confirm("删除 "+c.name+"？保存后才会写入 GitHub。"))return;state.data.cities=state.data.cities.filter(x=>x.id!==c.id);delete state.cityRegion[c.id];markDirty();closeDetail();refreshMap();renderList()};
+  $("#delCity").onclick=()=>{if(!confirm(T("删除 "+c.name+"？保存后才会写入 GitHub。","Delete "+c.name+"? Written to GitHub only after you save.")))return;state.data.cities=state.data.cities.filter(x=>x.id!==c.id);delete state.cityRegion[c.id];markDirty();closeDetail();refreshMap();renderList()};
 }
 
 /* ---------------- LEADERBOARD ---------------- */
@@ -693,17 +770,17 @@ function lbRank(a){
 function lbRowHTML(e,showCity){
   const unr=e.rank===null;
   const rc=(!unr&&e.rank<=3)?" r"+e.rank:"";
-  return `<div class="lb-row${unr?' unrated':''}"><span class="lb-rank${rc}">${unr?"–":e.rank}</span><span class="lb-name">${esc(e.name)}</span>${showCity&&e.city?`<span class="lb-city">${esc(e.city)}</span>`:""}<span class="lb-score">${unr?'<span class="lb-na">待评分</span>':e.rating.toFixed(1)}</span></div>`}
+  return `<div class="lb-row${unr?' unrated':''}"><span class="lb-rank${rc}">${unr?"–":e.rank}</span><span class="lb-name">${esc(e.name)}</span>${showCity&&e.city?`<span class="lb-city">${esc(e.city)}</span>`:""}<span class="lb-score">${unr?`<span class="lb-na">${T("待评分","unrated")}</span>`:e.rating.toFixed(1)}</span></div>`}
 function lbPopulateCities(){const set=new Set();state.data.cities.forEach(c=>{if(c.restaurants.length||c.bars.length)set.add(c.name)});
   const cs=[...set].sort(byPinyin);if(!cs.includes(state.lb.city))state.lb.city=cs[0]||"";
   $("#lbCity").innerHTML=cs.map(n=>`<option ${n===state.lb.city?"selected":""}>${esc(n)}</option>`).join("")}
 function renderLB(){const region=state.lb.scope==="region";$("#lbCity").style.display=region?"":"none";
   const city=region?state.lb.city:null;
   [["rest","#lbRest"],["bar","#lbBar"]].forEach(([t,sel])=>{const ranked=lbRank(lbCollect(t,city));
-    $(sel).innerHTML=ranked.length?ranked.map(e=>lbRowHTML(e,!region)).join(""):`<div class="lb-empty">还没有${t==="bar"?"Bar":"餐厅"}。</div>`});
+    $(sel).innerHTML=ranked.length?ranked.map(e=>lbRowHTML(e,!region)).join(""):`<div class="lb-empty">${T("还没有","No ")}${t==="bar"?"Bar":T("餐厅","restaurants")}${T("。","yet.")}</div>`});
   // 连锁：与地区无关，始终显示全部
   const ch=lbRank((state.data.chains||[]).map(e=>({name:e.name,rating:e.rating,city:""})));
-  $("#lbChain").innerHTML=ch.length?ch.map(e=>lbRowHTML(e,false)).join(""):`<div class="lb-empty">还没有连锁记录。</div>`;
+  $("#lbChain").innerHTML=ch.length?ch.map(e=>lbRowHTML(e,false)).join(""):`<div class="lb-empty">${T("还没有连锁记录。","No chains yet.")}</div>`;
 }
 function openLB(){lbPopulateCities();renderLB();$("#lb").classList.add("open")}
 $("#lbBtn").onclick=openLB;$("#lbClose").onclick=()=>$("#lb").classList.remove("open");
@@ -714,22 +791,22 @@ $("#lbCity").addEventListener("change",e=>{state.lb.city=e.target.value;renderLB
 let gt=null;
 $("#cityFilter").addEventListener("input",()=>{renderList();clearTimeout(gt);const q=$("#cityFilter").value.trim();if(q.length<2){$("#geoResults").style.display="none";return}gt=setTimeout(()=>geocode(q),420)});
 async function geocode(q){try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=zh&q=${encodeURIComponent(q)}`,{headers:{Accept:"application/json"}});const arr=await r.json();const box=$("#geoResults");if(!arr.length){box.style.display="none";return}
-  box.innerHTML=`<div class="geo-cap">点击添加（自动定位 + 点亮地区）</div>`+arr.map((p,i)=>{const parts=p.display_name.split(",");return `<div class="geo-item" data-i="${i}"><span class="plus">＋</span><span><b>${esc(parts[0].trim())}</b><i>${esc(parts.slice(1).join(",").trim())}</i></span></div>`}).join("");box.style.display="block";
+  box.innerHTML=`<div class="geo-cap">${T("点击添加（自动定位 + 点亮地区）","Click to add (auto-locate + light region)")}</div>`+arr.map((p,i)=>{const parts=p.display_name.split(",");return `<div class="geo-item" data-i="${i}"><span class="plus">＋</span><span><b>${esc(parts[0].trim())}</b><i>${esc(parts.slice(1).join(",").trim())}</i></span></div>`}).join("");box.style.display="block";
   box.querySelectorAll(".geo-item").forEach(d=>d.onclick=()=>{const p=arr[d.dataset.i],parts=p.display_name.split(",");addCity({name:parts[0].trim(),country:(parts[parts.length-1]||"").trim(),lat:+(+p.lat).toFixed(4),lng:+(+p.lon).toFixed(4)});box.style.display="none";$("#cityFilter").value="";renderList()})}catch(e){$("#geoResults").style.display="none"}}
 document.addEventListener("click",e=>{if(!e.target.closest(".search-wrap"))$("#geoResults").style.display="none"});
 
 /* ---------------- GITHUB ---------------- */
 function api(path,opts={}){const s=state.settings;return fetch(`https://api.github.com/repos/${s.owner}/${s.repo}/${path}`,{...opts,headers:{Authorization:"Bearer "+s.token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",...(opts.headers||{})}})}
-async function loadData(){setStatus("busy","加载中…");try{
+async function loadData(){setStatus("busy",T("加载中…","Loading…"));try{
   const r=await api(`contents/${encodeURIComponent(state.settings.path)}`);
-  if(r.status===404){state.sha=null;state.data={version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[],trips:[]};applyPending();state.loaded=true;state.dirty=false;finalize();toast("未找到 life.json，将在首次保存时创建");return}
-  if(r.status===401||r.status===403)throw new Error("Token 无权限或无效");
+  if(r.status===404){state.sha=null;state.data={version:1,config:{dimensions:[...DEFAULT_DIMS],otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[],trips:[]};applyPending();state.loaded=true;state.dirty=false;finalize();toast(T("未找到 life.json，将在首次保存时创建","life.json not found, will be created on first save"));return}
+  if(r.status===401||r.status===403)throw new Error(T("Token 无权限或无效","Token lacks permission or is invalid"));
   if(!r.ok)throw new Error("HTTP "+r.status);
-  const j=await r.json();state.sha=j.sha;state.data=normalize(JSON.parse(b64decode(j.content)));state.loaded=true;state.dirty=false;state.cityRegion={};finalize();toast("已加载 "+state.data.cities.length+" 个城市")
-}catch(e){setStatus("","连接失败");toast("加载失败："+e.message,true)}}
+  const j=await r.json();state.sha=j.sha;state.data=normalize(JSON.parse(b64decode(j.content)));state.loaded=true;state.dirty=false;state.cityRegion={};finalize();toast(T("已加载 ","Loaded ")+state.data.cities.length+T(" 个城市"," cities"))
+}catch(e){setStatus("",T("连接失败","Connection failed"));toast(T("加载失败：","Load failed: ")+e.message,true)}}
 function normalize(p){const d={version:1,config:{dimensions:DEFAULT_DIMS.slice(),otherTypes:DEFAULT_OTHER_TYPES.map(o=>({...o}))},cities:[],chains:[],trips:[]};
   if(p&&typeof p==="object"){if(p.config?.dimensions?.length)d.config.dimensions=p.config.dimensions;if(p.config?.otherTypes?.length)d.config.otherTypes=p.config.otherTypes.map(t=>({label:t.label||"",emoji:t.emoji||"📍"})).filter(t=>t.label);
-    if(Array.isArray(p.cities))d.cities=p.cities.map(c=>({id:c.id||uid(),name:c.name||"未命名",country:c.country||"",lat:typeof c.lat==="number"?c.lat:undefined,lng:typeof c.lng==="number"?c.lng:undefined,status:STATUS_META[c.status]?c.status:"visited",scores:c.scores||{},guide:c.guide||"",attractions:c.attractions||"",review:c.review||"",notes:c.notes||"",
+    if(Array.isArray(p.cities))d.cities=p.cities.map(c=>({id:c.id||uid(),name:c.name||T("未命名","Untitled"),country:c.country||"",lat:typeof c.lat==="number"?c.lat:undefined,lng:typeof c.lng==="number"?c.lng:undefined,status:STATUS_META[c.status]?c.status:"visited",scores:c.scores||{},guide:c.guide||"",attractions:c.attractions||"",review:c.review||"",notes:c.notes||"",
       restaurants:(c.restaurants||[]).map(r=>({id:r.id||uid(),name:r.name||"",rating:r.rating??null,note:r.note||""})),
       bars:(c.bars||[]).map(b=>({id:b.id||uid(),name:b.name||"",rating:b.rating??null,note:b.note||"",cocktails:(b.cocktails||[]).map(k=>{const o={id:k.id||uid(),name:k.name||"",level:COCKTAIL_LEVELS.includes(k.level)?k.level:"tried"};if(k.food)o.food=true;return o})})),
       others:(c.others||[]).map(o=>({id:o.id||uid(),name:o.name||"",type:o.type||"其他",rating:o.rating??null,note:o.note||""}))}));
@@ -741,12 +818,12 @@ function normalize(p){const d={version:1,config:{dimensions:DEFAULT_DIMS.slice()
   if(ci>=0){const old=d.cities.splice(ci,1)[0];
     [...old.restaurants,...old.bars,...old.others].forEach(e=>d.chains.push({id:e.id||uid(),name:e.name||"",rating:e.rating??null,note:e.note||""}));}
   d.cities.forEach(c=>d.config.dimensions.forEach(dim=>{if(typeof c.scores[dim]!=="number")c.scores[dim]=5}));return d}
-async function saveData(){if(!state.loaded){toast("请先连接数据",true);return}setStatus("busy","保存中…");try{
+async function saveData(){if(!state.loaded){toast(T("请先连接数据","Connect data first"),true);return}setStatus("busy",T("保存中…","Saving…"));try{
   const body={message:`update life.json · ${new Date().toISOString()}`,content:b64encode(JSON.stringify(state.data,null,2))};if(state.sha)body.sha=state.sha;
   const r=await api(`contents/${encodeURIComponent(state.settings.path)}`,{method:"PUT",body:JSON.stringify(body)});
-  if(r.status===409)throw new Error("版本冲突，请刷新重试");if(!r.ok)throw new Error("HTTP "+r.status);
-  const j=await r.json();state.sha=j.content.sha;state.dirty=false;updateStatus();toast("已保存到 GitHub ✓")
-}catch(e){updateStatus();toast("保存失败："+e.message,true)}}
+  if(r.status===409)throw new Error(T("版本冲突，请刷新重试","Version conflict, refresh and retry"));if(!r.ok)throw new Error("HTTP "+r.status);
+  const j=await r.json();state.sha=j.content.sha;state.dirty=false;updateStatus();toast(T("已保存到 GitHub ✓","Saved to GitHub ✓"))
+}catch(e){updateStatus();toast(T("保存失败：","Save failed: ")+e.message,true)}}
 
 // 公开数据：仅含 名称/国家/状态/坐标/评价；按国家分组为标准 sections 结构
 function buildPublicData(){
@@ -761,16 +838,16 @@ function buildPublicData(){
 // 发布公开数据：直接写入 GitHub 数据仓库（与主数据同仓库，根目录）；
 // 未配置 GitHub 或发布失败时回退为本地下载
 async function publishPublic(){
-  if(!state.loaded){toast("请先连接数据",true);return}
+  if(!state.loaded){toast(T("请先连接数据","Connect data first"),true);return}
   const data=buildPublicData();
   const count=data.sections.reduce((n,s)=>n+s.items.length,0);
-  if(!count){toast("还没有勾选「公开展示」的城市",true);return}
+  if(!count){toast(T("还没有勾选「公开展示」的城市","No cities marked “public” yet"),true);return}
   const filename="life.public.json",json=JSON.stringify(data,null,2);
   const PUBLIC_REPO="Database-Public"; // 公开数据专用仓库（public）——网站只从这里读取，碰不到私有库
   const s=state.settings;
   if(s.token&&s.owner){
     try{
-      setStatus("busy","发布公开数据…");
+      setStatus("busy",T("发布公开数据…","Publishing…"));
       const url=`https://api.github.com/repos/${s.owner}/${PUBLIC_REPO}/contents/${filename}`;
       const hdrs={Authorization:"Bearer "+s.token,Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
       const head=await fetch(url,{headers:hdrs});
@@ -779,14 +856,14 @@ async function publishPublic(){
       if(sha)body.sha=sha;
       const r=await fetch(url,{method:"PUT",headers:{...hdrs,"Content-Type":"application/json"},body:JSON.stringify(body)});
       if(!r.ok)throw new Error("HTTP "+r.status);
-      updateStatus();toast(`已发布 ${count} 个公开城市 → ${filename} ✓`);
+      updateStatus();toast(T(`已发布 ${count} 个公开城市 → ${filename} ✓`,`Published ${count} public cities → ${filename} ✓`));
       return;
-    }catch(e){updateStatus();toast("发布失败："+e.message+"，已转为本地下载",true)}
+    }catch(e){updateStatus();toast(T("发布失败：","Publish failed: ")+e.message+T("，已转为本地下载",", fell back to local download"),true)}
   }
   const blob=new Blob([json],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-  toast(`已导出 ${count} 个公开城市（本地下载）`);
+  toast(T(`已导出 ${count} 个公开城市（本地下载）`,`Exported ${count} public cities (local download)`));
 }
 $("#publishBtn").addEventListener("click",publishPublic);
 function finalize(){state.cityRegion={};refreshMap();renderList();$("#saveBtn").disabled=false;updateStatus();
@@ -795,7 +872,7 @@ function finalize(){state.cityRegion={};refreshMap();renderList();$("#saveBtn").
 
 /* ---------------- STATUS ---------------- */
 function setStatus(cls,txt){$("#statusPill").className="status-pill"+(cls?" "+cls:"");$("#statusTxt").textContent=txt}
-function updateStatus(){if(!state.loaded){setStatus("","未连接");$("#saveBtn").disabled=true;return}if(state.dirty){setStatus("dirty","有未保存改动");$("#saveBtn").disabled=false}else{setStatus("ok","已同步");$("#saveBtn").disabled=false}}
+function updateStatus(){if(!state.loaded){setStatus("",T("未连接","Not connected"));$("#saveBtn").disabled=true;return}if(state.dirty){setStatus("dirty",T("有未保存改动","Unsaved changes"));$("#saveBtn").disabled=false}else{setStatus("ok",T("已同步","Synced"));$("#saveBtn").disabled=false}}
 
 /* ---------------- LEGEND / RAIL ---------------- */
 $("#legend").querySelectorAll(".item").forEach(it=>it.onclick=()=>{const f=it.dataset.f;state.filters[f]=!state.filters[f];it.classList.toggle("off",!state.filters[f]);refreshMap();renderList()});
@@ -804,45 +881,49 @@ $("#railToggle").onclick=toggleRail;$("#collapseRail").onclick=toggleRail;$("#ra
 
 /* ---------------- SETTINGS ---------------- */
 let pendingDims=null,pendingOtypes=null;
-function openSettings(){$("#setOwner").value=state.settings.owner;$("#setRepo").value=state.settings.repo;$("#setPath").value=state.settings.path||"life.json";$("#setToken").value=state.settings.token;
+function openSettings(){applyStatic();
+  $("#setLede").innerHTML=T('应用代码在公开 repo，个人数据在<b>私有 repo 的 <span class="mono">life.json</span></b>。以下只存本机浏览器。需要 GitHub <b>Fine-grained token</b>，对该私有 repo 授予 <b>Contents: Read and write</b>。<a href="https://github.com/settings/personal-access-tokens/new" target="_blank">创建 →</a>','The app code is in a public repo; your personal data lives in <b>life.json in your private repo</b>. The fields below stay only in this browser. You need a GitHub <b>Fine-grained token</b> granting that repo <b>Contents: Read and write</b>. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">Create →</a>');
+  $("#setPlanModel").innerHTML=`<option value="claude-haiku-4-5-20251001">${T("Haiku 4.5（快/省，简单行程）","Haiku 4.5 (fast/cheap, simple trips)")}</option><option value="claude-sonnet-4-6">${T("Sonnet 4.6（推荐，路线规划）","Sonnet 4.6 (recommended, route planning)")}</option><option value="claude-opus-4-8">${T("Opus 4.8（最强，复杂多城）","Opus 4.8 (strongest, complex multi-city)")}</option>`;
+  $("#setOwner").value=state.settings.owner;$("#setRepo").value=state.settings.repo;$("#setPath").value=state.settings.path||"life.json";$("#setToken").value=state.settings.token;
   $("#setAiKey").value=state.settings.aiKey||"";$("#setPlanModel").value=state.settings.planModel||"claude-haiku-4-5-20251001";$("#setWebSearch").checked=state.settings.webSearch!==false;$("#setThinking").checked=state.settings.thinking!==false;
   renderDimsEdit(dims());renderOtypesEdit(otherTypes());$("#setWarn").className="warn";$("#overlay").classList.add("open")}
 function dimRow(v){return `<div class="row"><input value="${esc(v)}" data-dim-input><button class="del" data-dim-del>✕</button></div>`}
-function renderDimsEdit(a){$("#dimsEdit").innerHTML=a.map(dimRow).join("");wireDel("#dimsEdit","[data-dim-del]",4,"维度")}
-function otypeRow(t){return `<div class="row"><input class="emoji" maxlength="4" value="${esc(t.emoji||"")}" data-ot-emoji placeholder="🙂"><input value="${esc(t.label||"")}" data-ot-label placeholder="类型名"><button class="del" data-ot-del>✕</button></div>`}
-function renderOtypesEdit(a){$("#otypesEdit").innerHTML=a.map(otypeRow).join("");wireDel("#otypesEdit","[data-ot-del]",1,"类型")}
-function wireDel(box,sel,min,lab){$(box).querySelectorAll(sel).forEach(b=>b.onclick=()=>{if($(box).querySelectorAll(".row").length<=min){toast("至少保留 "+min+" 个"+lab,true);return}b.closest(".row").remove()})}
-$("#addDim").onclick=()=>{if($("#dimsEdit").querySelectorAll(".row").length>=6){toast("最多 6 个维度",true);return}$("#dimsEdit").insertAdjacentHTML("beforeend",dimRow(""));wireDel("#dimsEdit","[data-dim-del]",4,"维度")};
-$("#addOtype").onclick=()=>{$("#otypesEdit").insertAdjacentHTML("beforeend",otypeRow({}));wireDel("#otypesEdit","[data-ot-del]",1,"类型")};
+function renderDimsEdit(a){$("#dimsEdit").innerHTML=a.map(dimRow).join("");wireDel("#dimsEdit","[data-dim-del]",4,T("维度","dimension"))}
+function otypeRow(t){return `<div class="row"><input class="emoji" maxlength="4" value="${esc(t.emoji||"")}" data-ot-emoji placeholder="🙂"><input value="${esc(t.label||"")}" data-ot-label placeholder="${T("类型名","Type name")}"><button class="del" data-ot-del>✕</button></div>`}
+function renderOtypesEdit(a){$("#otypesEdit").innerHTML=a.map(otypeRow).join("");wireDel("#otypesEdit","[data-ot-del]",1,T("类型","type"))}
+function wireDel(box,sel,min,lab){$(box).querySelectorAll(sel).forEach(b=>b.onclick=()=>{if($(box).querySelectorAll(".row").length<=min){toast(T("至少保留 "+min+" 个"+lab,"Keep at least "+min+" "+lab),true);return}b.closest(".row").remove()})}
+$("#addDim").onclick=()=>{if($("#dimsEdit").querySelectorAll(".row").length>=6){toast(T("最多 6 个维度","At most 6 dimensions"),true);return}$("#dimsEdit").insertAdjacentHTML("beforeend",dimRow(""));wireDel("#dimsEdit","[data-dim-del]",4,T("维度","dimension"))};
+$("#addOtype").onclick=()=>{$("#otypesEdit").insertAdjacentHTML("beforeend",otypeRow({}));wireDel("#otypesEdit","[data-ot-del]",1,T("类型","type"))};
 function collectDims(){return[...$("#dimsEdit").querySelectorAll("[data-dim-input]")].map(i=>i.value.trim()).filter(Boolean)}
 function collectOtypes(){return[...$("#otypesEdit").querySelectorAll(".row")].map(r=>({emoji:r.querySelector("[data-ot-emoji]").value.trim()||"📍",label:r.querySelector("[data-ot-label]").value.trim()})).filter(t=>t.label)}
 function applyPending(){if(pendingDims?.length){state.data.config.dimensions=pendingDims;state.data.cities.forEach(c=>pendingDims.forEach(d=>{if(typeof c.scores[d]!=="number")c.scores[d]=5}))}if(pendingOtypes?.length)state.data.config.otherTypes=pendingOtypes}
 $("#settingsBtn").onclick=openSettings;$("#cancelSet").onclick=()=>$("#overlay").classList.remove("open");
 $("#overlay").addEventListener("click",e=>{if(e.target.id==="overlay")$("#overlay").classList.remove("open")});
 $("#connectBtn").onclick=async()=>{const owner=$("#setOwner").value.trim(),repo=$("#setRepo").value.trim(),path=$("#setPath").value.trim()||"life.json",token=$("#setToken").value.trim();
-  if(!owner||!repo||!token){warn("请填写 owner、repo、token。");return}
-  const nd=collectDims();if(nd.length<4||nd.length>6){warn("维度需 4–6 个。");return}
-  const no=collectOtypes();if(no.length<1){warn("至少 1 个其他类型。");return}
+  if(!owner||!repo||!token){warn(T("请填写 owner、repo、token。","Please fill in owner, repo, token."));return}
+  const nd=collectDims();if(nd.length<4||nd.length>6){warn(T("维度需 4–6 个。","Need 4–6 dimensions."));return}
+  const no=collectOtypes();if(no.length<1){warn(T("至少 1 个其他类型。","At least 1 other type."));return}
   state.settings={owner,repo,path,token,aiKey:$("#setAiKey").value.trim(),planModel:$("#setPlanModel").value,webSearch:$("#setWebSearch").checked,thinking:$("#setThinking").checked};state.web=state.settings.webSearch;state.think=state.settings.thinking;save("la_settings",state.settings);pendingDims=nd;pendingOtypes=no;
   $("#overlay").classList.remove("open");await loadData();
   // apply config changes to existing loaded data
-  if(state.loaded){const cur=state.data.config.dimensions;if(JSON.stringify(cur)!==JSON.stringify(nd)&&confirm("评分维度有改动，应用新维度？同名分数保留，新维度默认5。")){state.data.config.dimensions=nd;state.data.cities.forEach(c=>{const ns={};nd.forEach(d=>ns[d]=typeof c.scores[d]==="number"?c.scores[d]:5);c.scores=ns});markDirty();renderList()}
+  if(state.loaded){const cur=state.data.config.dimensions;if(JSON.stringify(cur)!==JSON.stringify(nd)&&confirm(T("评分维度有改动，应用新维度？同名分数保留，新维度默认5。","Scoring dimensions changed. Apply them? Same-named scores are kept, new dimensions default to 5."))){state.data.config.dimensions=nd;state.data.cities.forEach(c=>{const ns={};nd.forEach(d=>ns[d]=typeof c.scores[d]==="number"?c.scores[d]:5);c.scores=ns});markDirty();renderList()}
     if(JSON.stringify(state.data.config.otherTypes)!==JSON.stringify(no)){state.data.config.otherTypes=no;markDirty()}
     if(state.selectedId)renderDetail()}};
 function warn(m){$("#setWarn").textContent=m;$("#setWarn").className="warn show"}
 
 /* ---------------- TRIPS / 攻略 ---------------- */
 const TRK={
-  hotels:{label:"酒店",icon:"🏨",statuses:["未预订","已预订","已付款","已入住","已退房"]},
-  attractions:{label:"景点",icon:"🎟",statuses:["待定","已预约","已购票","已完成"]},
-  restaurants:{label:"餐厅",icon:"🍽",statuses:["待定","已订位","已完成"]},
-  transport:{label:"交通",icon:"🚄",statuses:["未预订","已预订","已出票","已完成"],hasType:true,types:["机票","火车","当地交通","租车","船/渡轮"]},
-  network:{label:"手机网络",icon:"📶",statuses:["待办","已购买","已激活"],hasType:true,types:["eSIM","实体SIM卡","开通漫游","随身WiFi"]}
+  hotels:{label:"酒店",en:"Hotel",icon:"🏨",statuses:["未预订","已预订","已付款","已入住","已退房"]},
+  attractions:{label:"景点",en:"Attraction",icon:"🎟",statuses:["待定","已预约","已购票","已完成"]},
+  restaurants:{label:"餐厅",en:"Restaurant",icon:"🍽",statuses:["待定","已订位","已完成"]},
+  transport:{label:"交通",en:"Transport",icon:"🚄",statuses:["未预订","已预订","已出票","已完成"],hasType:true,types:["机票","火车","当地交通","租车","船/渡轮"]},
+  network:{label:"手机网络",en:"Mobile network",icon:"📶",statuses:["待办","已购买","已激活"],hasType:true,types:["eSIM","实体SIM卡","开通漫游","随身WiFi"]}
 };
+const trkLabel=k=>{const c=TRK[k];return c?(lang==="en"?c.en:c.label):k;};
 function normItem(e){return{id:e.id||uid(),type:e.type||"",name:e.name||"",when:e.when||"",status:e.status||"",note:e.note||""}}
 function normalizeTrip(t){t=t||{};
   const it=t.itinerary||{};
-  return{id:t.id||uid(),name:t.name||"未命名行程",destination:t.destination||"",startDate:t.startDate||"",endDate:t.endDate||"",
+  return{id:t.id||uid(),name:t.name||T("未命名行程","Untitled trip"),destination:t.destination||"",startDate:t.startDate||"",endDate:t.endDate||"",
     pace:t.pace||"适中",interests:t.interests||"",
     wishCities:t.wishCities||"",mustSee:t.mustSee||"",wishFood:t.wishFood||"",
     dayWindows:Array.isArray(t.dayWindows)?t.dayWindows.map(w=>({day:parseInt(w.day)||"",start:w.start||"",end:w.end||""})):[],
@@ -863,18 +944,18 @@ function snapItinerary(t,label){if(t.itinerary&&t.itinerary.days&&t.itinerary.da
 function tripChat(t){t.chat=t.chat||[];return t.chat}
 function pushChat(t,m){tripChat(t).push(m);if(t.chat.length>60)t.chat=t.chat.slice(-60);markDirty()}
 function buildLiteText(t){const it=t.itinerary,lines=[];
-  let head=t.name||"行程";const dest=t.destination||(t.segments||[]).map(s=>s.place).filter(Boolean).join(" · ");
+  let head=t.name||T("行程","Trip");const dest=t.destination||(t.segments||[]).map(s=>s.place).filter(Boolean).join(" · ");
   if(dest)head+=" · "+dest;
-  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(it.days.length?it.days.length+"天":"");
+  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(it.days.length?it.days.length+T("天"," days"):"");
   lines.push(head+(dr?`（${dr}）`:""));lines.push("");
   it.days.forEach(d=>{const spots=d.stops.filter(s=>!/灵活|自由|交通/.test(s.type)&&!/灵活时间/.test(s.name)).map(s=>s.name).filter(Boolean);
     const dl=d.date?d.date.slice(5):"";
-    lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||"自由活动"}`);});
+    lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||T("自由活动","Free time")}`);});
   return lines.join("\n");}
 /* ---- 攻略导出长图（纯 canvas 自绘；自动分页避免超出手机 canvas 上限导致模糊；预览中长按保存） ---- */
 async function exportLongImage(t){
-  if(!t.itinerary.days.length){toast("还没有路线，先规划一下",true);return}
-  toast("正在生成长图…");
+  if(!t.itinerary.days.length){toast(T("还没有路线，先规划一下","No route yet — plan one first"),true);return}
+  toast(T("正在生成长图…","Generating image…"));
   try{ if(document.fonts&&document.fonts.ready) await document.fonts.ready; }catch(e){}
   const W=760, P=44, SCALE=2, MAXH=1900, gap=14;   // 每页 CSS 高 ≤ MAXH → 设备像素 ≤ MAXH*SCALE，远低于手机 canvas 上限，保证清晰
   const C={bg:"#fbf6ef",card:"#ffffff",ink:"#1f1633",soft:"#5b5470",faint:"#9b93a8",line:"#ece2d6",accent:"#6c5ce7",accentSoft:"#e7e3fb"};
@@ -909,7 +990,7 @@ async function exportLongImage(t){
     let h=pad + headLines.length*30 + 6;
     const stops=(d.stops||[]);
     const rows=stops.map(s=>{
-      const nameLines=wrap((s.name||"（未命名）")+(s.type?`  · ${s.type}`:""),17,"600",fSans,nameW);
+      const nameLines=wrap((s.name||T("（未命名）","(unnamed)"))+(s.type?`  · ${s.type}`:""),17,"600",fSans,nameW);
       const meta=[s.area,s.note].filter(Boolean).join(" · ");
       const metaLines=meta?wrap(meta,14,"400",fSans,nameW):[];
       const rh=nameLines.length*24 + metaLines.length*20 + 12;
@@ -923,9 +1004,9 @@ async function exportLongImage(t){
   const blocks=t.itinerary.days.map(d=>({type:"day",data:d,...dayBlock(d)}));
   const tips=(t.itinerary.tips||[]).filter(Boolean);
   // 完整头部（第 1 页）
-  const titleLines=wrap(t.name||"我的行程",40,"700",fSerif,cardW);
+  const titleLines=wrap(t.name||T("我的行程","My Trip"),40,"700",fSerif,cardW);
   const dest=t.destination||(t.segments||[]).map(s=>s.place).filter(Boolean).join(" · ");
-  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(t.itinerary.days.length+" 天");
+  const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(t.itinerary.days.length+T(" 天"," days"));
   const sub=[dest,dr].filter(Boolean).join("   ·   ");
   const subLines=sub?wrap(sub,19,"400",fSans,cardW):[];
   const headH=P + 13+18 + titleLines.length*48 + (subLines.length?subLines.length*27+6:0) + 10 + 4+24;
@@ -964,13 +1045,13 @@ async function exportLongImage(t){
     const T=(str,x,y,size,weight,fam,color)=>{ctx.font=f(weight,size,fam);ctx.fillStyle=color;ctx.fillText(str,x,y);};
     let y;
     if(isFirst){
-      y=P; T("LIFE ATLAS · 旅游攻略",P,y+13,13,"600",fMono,C.accent); y+=13+18;
+      y=P; T(lang==="en"?"LIFE ATLAS · TRAVEL PLAN":"LIFE ATLAS · 旅游攻略",P,y+13,13,"600",fMono,C.accent); y+=13+18;
       titleLines.forEach(ln=>{y+=40; T(ln,P,y,40,"700",fSerif,C.ink); y+=8;});
       subLines.forEach(ln=>{y+=19; T(ln,P,y,19,"400",fSans,C.soft); y+=8;});
       y+=10; ctx.fillStyle=C.accent; rrectP(ctx,P,y,54,4,2); ctx.fill(); y+=24;
     } else {
-      y=P; T((t.name||"我的行程"),P,y+18,20,"700",fSerif,C.ink);
-      const tag=`第 ${idx+1} / ${total} 张`; ctx.font=f("600",13,fMono);
+      y=P; T((t.name||(lang==="en"?"My Trip":"我的行程")),P,y+18,20,"700",fSerif,C.ink);
+      const tag=lang==="en"?`Page ${idx+1} / ${total}`:`第 ${idx+1} / ${total} 张`; ctx.font=f("600",13,fMono);
       T(tag,W-P-ctx.measureText(tag).width,y+17,13,"600",fMono,C.accent); y=contH;
     }
     pItems.forEach(it=>{
@@ -981,7 +1062,7 @@ async function exportLongImage(t){
         let cy=y+pad;
         b.headLines.forEach(ln=>{cy+=22; T(ln,cardX+pad,cy,21,"700",fSans,C.accent); cy+=8;});
         cy+=2;
-        if(b.empty){ T("（暂无具体停留点）",cardX+pad,cy+18,15,"400",fSans,C.faint); cy+=28; }
+        if(b.empty){ T(lang==="en"?"(no specific stops)":"（暂无具体停留点）",cardX+pad,cy+18,15,"400",fSans,C.faint); cy+=28; }
         b.rows.forEach(r=>{
           const top=cy;
           if(r.time) T(r.time,cardX+pad,top+18,15,"600",fMono,C.accent);
@@ -993,18 +1074,18 @@ async function exportLongImage(t){
         y+=b.h+gap;
       } else {
         ctx.fillStyle=C.accentSoft; rrectP(ctx,cardX,y+14,cardW,it.h-14,16); ctx.fill();
-        let cy=y+14+pad; T("📌 实用提示 Tips",cardX+pad,cy+18,18,"700",fSans,C.ink); cy+=30;
+        let cy=y+14+pad; T(lang==="en"?"📌 Tips":"📌 实用提示 Tips",cardX+pad,cy+18,18,"700",fSans,C.ink); cy+=30;
         it.tipLineSets.forEach(ls=>{ ls.forEach(ln=>{cy+=20; T(ln,cardX+pad,cy,15,"400",fSans,C.ink); cy+=3;}); cy+=6; });
         y+=it.h+gap;
       }
     });
-    T(`由 Life Atlas 生成 · ${new Date().toISOString().slice(0,10)}  ·  第 ${idx+1}/${total} 张`,P,H-P+6,12,"400",fMono,C.faint);
+    T(lang==="en"?`Made with Life Atlas · ${new Date().toISOString().slice(0,10)}  ·  Page ${idx+1}/${total}`:`由 Life Atlas 生成 · ${new Date().toISOString().slice(0,10)}  ·  第 ${idx+1}/${total} 张`,P,H-P+6,12,"400",fMono,C.faint);
     return cv;
   }
 
   const canvases=pages.map((pg,i)=>renderPage(pg,i));
   showLongImgPreview(canvases,t,fSans);
-  toast(total>1?`已生成 ${total} 张清晰长图`:"已生成长图");
+  toast(total>1?T(`已生成 ${total} 张清晰长图`,`Generated ${total} crisp images`):T("已生成长图","Image generated"));
 }
 function showLongImgPreview(canvases,t,fSans){
   const old=document.getElementById("imgPreviewOverlay"); if(old) old.remove();
@@ -1013,59 +1094,59 @@ function showLongImgPreview(canvases,t,fSans){
   const btn="appearance:none;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;font:inherit;font-size:14px;padding:8px 14px;border-radius:9px;cursor:pointer;min-height:40px";
   const bar=document.createElement("div");
   bar.style.cssText=`flex:none;display:flex;align-items:center;gap:10px;padding:max(12px,env(safe-area-inset-top)) 16px 12px;color:#fff;font-family:${fSans};flex-wrap:wrap`;
-  bar.innerHTML=`<b style="font-size:15px">攻略长图 · 共 ${canvases.length} 张</b><span style="font-size:12px;opacity:.8">📱 长按图片即可保存到相册</span>`;
+  bar.innerHTML=`<b style="font-size:15px">${T(`攻略长图 · 共 ${canvases.length} 张`,`Trip image · ${canvases.length} page(s)`)}</b><span style="font-size:12px;opacity:.8">${T("📱 长按图片即可保存到相册","📱 Long-press an image to save it")}</span>`;
   const sp=document.createElement("div"); sp.style.flex="1"; bar.appendChild(sp);
-  const dl=document.createElement("button"); dl.textContent="⬇ 下载全部"; dl.style.cssText=btn;
-  const cl=document.createElement("button"); cl.textContent="✕ 关闭"; cl.style.cssText=btn;
+  const dl=document.createElement("button"); dl.textContent=T("⬇ 下载全部","⬇ Download all"); dl.style.cssText=btn;
+  const cl=document.createElement("button"); cl.textContent=T("✕ 关闭","✕ Close"); cl.style.cssText=btn;
   bar.appendChild(dl); bar.appendChild(cl);
   const scroll=document.createElement("div");
   scroll.style.cssText="flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:6px 12px calc(28px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:14px";
   const urls=canvases.map((cv,i)=>{
     const url=cv.toDataURL("image/png");
-    const img=new Image(); img.src=url; img.alt=`攻略长图 ${i+1}`;
+    const img=new Image(); img.src=url; img.alt=`${T("攻略长图","Trip image")} ${i+1}`;
     img.style.cssText="width:100%;max-width:430px;height:auto;border-radius:10px;box-shadow:0 12px 34px rgba(0,0,0,.45);display:block";
     scroll.appendChild(img); return url;
   });
   ov.appendChild(bar); ov.appendChild(scroll); document.body.appendChild(ov);
-  const fname=i=>((t.name||"行程").replace(/[\\/:*?"<>|]/g,"_"))+"-攻略"+(urls.length>1?("-"+(i+1)):"")+".png";
+  const fname=i=>((t.name||T("行程","trip")).replace(/[\\/:*?"<>|]/g,"_"))+T("-攻略","-plan")+(urls.length>1?("-"+(i+1)):"")+".png";
   dl.onclick=async()=>{ for(let i=0;i<urls.length;i++){ const a=document.createElement("a"); a.href=urls[i]; a.download=fname(i); document.body.appendChild(a); a.click(); a.remove(); await new Promise(r=>setTimeout(r,400)); } };
   cl.onclick=()=>ov.remove();
   ov.addEventListener("click",e=>{ if(e.target===ov) ov.remove(); });
 }
-function openExport(t){if(!t.itinerary.days.length){toast("还没有路线，先规划一下",true);return}$("#exportText").value=buildLiteText(t);$("#exportOverlay").classList.add("open")}
+function openExport(t){if(!t.itinerary.days.length){toast(T("还没有路线，先规划一下","No route yet — plan one first"),true);return}$("#exportText").value=buildLiteText(t);$("#exportOverlay").classList.add("open")}
 function tripDays(t){if(t.startDate&&t.endDate){const a=new Date(t.startDate),b=new Date(t.endDate);const n=Math.round((b-a)/864e5)+1;if(n>0&&n<60)return n}return 0}
 
-function openTrips(){if(!state.loaded){toast("请先连接数据",true);return}
+function openTrips(){if(!state.loaded){toast(T("请先连接数据","Connect data first"),true);return}
   if(!curTrip()&&state.data.trips.length)state.tripId=state.data.trips[0].id;
   state.tripTab=state.tripTab||"plan";$("#trips").classList.add("open");renderTripRail();renderTripMain()}
 $("#tripsBtn").onclick=openTrips;$("#tripsClose").onclick=()=>$("#trips").classList.remove("open");
 $("#exportClose").onclick=()=>$("#exportOverlay").classList.remove("open");
 $("#exportImg").onclick=()=>{const t=curTrip();if(t)exportLongImage(t);};
 $("#exportOverlay").addEventListener("click",e=>{if(e.target.id==="exportOverlay")$("#exportOverlay").classList.remove("open")});
-$("#exportCopy").onclick=async()=>{const ta=$("#exportText");try{await navigator.clipboard.writeText(ta.value);toast("已复制到剪贴板")}catch(e){ta.select();try{document.execCommand("copy");toast("已复制")}catch(_){toast("复制失败，请手动选择",true)}}};
-$("#exportDl").onclick=()=>{const t=curTrip();const blob=new Blob([$("#exportText").value],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=((t&&t.name)||"行程")+"-省流版.txt";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-$("#tripNew").onclick=()=>{const t=normalizeTrip({name:"新行程"});state.data.trips.unshift(t);state.tripId=t.id;state.tripTab="plan";markDirty();renderTripRail();renderTripMain()};
+$("#exportCopy").onclick=async()=>{const ta=$("#exportText");try{await navigator.clipboard.writeText(ta.value);toast(T("已复制到剪贴板","Copied to clipboard"))}catch(e){ta.select();try{document.execCommand("copy");toast(T("已复制","Copied"))}catch(_){toast(T("复制失败，请手动选择","Copy failed, select manually"),true)}}};
+$("#exportDl").onclick=()=>{const t=curTrip();const blob=new Blob([$("#exportText").value],{type:"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=((t&&t.name)||T("行程","trip"))+T("-省流版.txt","-lite.txt");a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+$("#tripNew").onclick=()=>{const t=normalizeTrip({name:T("新行程","New trip")});state.data.trips.unshift(t);state.tripId=t.id;state.tripTab="plan";markDirty();renderTripRail();renderTripMain()};
 
 function renderTripRail(){const r=$("#tripRail");
-  if(!state.data.trips.length){r.innerHTML=`<div class="trip-empty">还没有行程。<br>点右上「+ 新建行程」。</div>`;return}
+  if(!state.data.trips.length){r.innerHTML=`<div class="trip-empty">${T('还没有行程。<br>点右上「+ 新建行程」。','No trips yet.<br>Click “+ New trip” at top-right.')}</div>`;return}
   r.innerHTML=state.data.trips.map(t=>`<div class="trip-item ${t.id===state.tripId?'active':''}" data-id="${t.id}">
-    <b>${esc(t.name)}</b><span>${esc(t.destination||"未填目的地")}${t.startDate?" · "+t.startDate.slice(5):""}</span></div>`).join("");
+    <b>${esc(t.name)}</b><span>${esc(t.destination||T("未填目的地","No destination"))}${t.startDate?" · "+t.startDate.slice(5):""}</span></div>`).join("");
   r.querySelectorAll(".trip-item").forEach(el=>el.onclick=()=>{state.tripId=el.dataset.id;state.tripTab="plan";renderTripRail();renderTripMain()});}
 
 function stClass(cfg,st){const i=cfg.statuses.indexOf(st);if(i<=0)return"st-todo";if(i===cfg.statuses.length-1)return"st-done";if(/付款|出票|激活/.test(st))return"st-paid";return"st-doing"}
 
 function renderTripMain(){const t=curTrip();const m=$("#tripMain");
-  if(!t){m.innerHTML=`<div class="trip-empty">选择左侧行程，或新建一个。</div>`;return}
-  const tabs=[["plan","🗺 路线规划"],["hotels","🏨 酒店"],["attractions","🎟 景点"],["restaurants","🍽 餐厅"],["transport","🚄 交通"],["network","📶 手机网络"],["alternates","📌 备选"],["money","💱 兑换 · 记账"]];
+  if(!t){m.innerHTML=`<div class="trip-empty">${T("选择左侧行程，或新建一个。","Pick a trip on the left, or create one.")}</div>`;return}
+  const tabs=[["plan",T("🗺 路线规划","🗺 Route")],["hotels",T("🏨 酒店","🏨 Hotels")],["attractions",T("🎟 景点","🎟 Attractions")],["restaurants",T("🍽 餐厅","🍽 Restaurants")],["transport",T("🚄 交通","🚄 Transport")],["network",T("📶 手机网络","📶 Network")],["alternates",T("📌 备选","📌 Backups")],["money",T("💱 兑换 · 记账","💱 FX · Expenses")]];
   m.innerHTML=`
     <div class="card"><div class="trip-hd">
-      <div class="full"><label>行程名称</label><input id="tName" value="${esc(t.name)}"></div>
-      <div class="full"><label>目的地（总称，可选）</label><input id="tDest" value="${esc(t.destination)}" placeholder="如：日本关西（具体分段在「路线规划」里填）"></div>
-      <div><label>出发日期</label><input id="tStart" type="date" value="${t.startDate}"></div>
-      <div><label>返回日期</label><input id="tEnd" type="date" value="${t.endDate}"></div>
-      <div><label>本位币</label><input id="tHome" value="${esc(t.homeCurrency)}" placeholder="CNY"></div>
+      <div class="full"><label>${T("行程名称","Trip name")}</label><input id="tName" value="${esc(t.name)}"></div>
+      <div class="full"><label>${T("目的地（总称，可选）","Destination (overall, optional)")}</label><input id="tDest" value="${esc(t.destination)}" placeholder="${T("如：日本关西（具体分段在「路线规划」里填）","e.g. Kansai, Japan (set segments under Route)")}"></div>
+      <div><label>${T("出发日期","Start date")}</label><input id="tStart" type="date" value="${t.startDate}"></div>
+      <div><label>${T("返回日期","End date")}</label><input id="tEnd" type="date" value="${t.endDate}"></div>
+      <div><label>${T("本位币","Home currency")}</label><input id="tHome" value="${esc(t.homeCurrency)}" placeholder="CNY"></div>
     </div>
-    <button class="btn" id="tDel" style="color:var(--resided);border-color:var(--resided);font-size:12px;padding:6px 10px">删除此行程</button></div>
+    <button class="btn" id="tDel" style="color:var(--resided);border-color:var(--resided);font-size:12px;padding:6px 10px">${T("删除此行程","Delete this trip")}</button></div>
     <div class="trip-tabs">${tabs.map(([k,l])=>{const ct=(TRK[k]||k==="alternates")?` <span class="ct">${(t[k]||[]).length}</span>`:"";return `<div class="trip-tab ${state.tripTab===k?'on':''}" data-tab="${k}">${l}${ct}</div>`}).join("")}</div>
     <div id="tabBody"></div>`;
   $("#tName").oninput=e=>{t.name=e.target.value;markDirty();renderTripRail()};
@@ -1073,7 +1154,7 @@ function renderTripMain(){const t=curTrip();const m=$("#tripMain");
   $("#tStart").onchange=e=>{t.startDate=e.target.value;markDirty();renderTripRail();if(state.tripTab==="plan")renderTabBody()};
   $("#tEnd").onchange=e=>{t.endDate=e.target.value;markDirty();if(state.tripTab==="plan")renderTabBody()};
   $("#tHome").oninput=e=>{t.homeCurrency=e.target.value.trim()||"CNY";markDirty()};
-  $("#tDel").onclick=()=>{if(!confirm("删除行程「"+t.name+"」？"))return;state.data.trips=state.data.trips.filter(x=>x.id!==t.id);state.tripId=state.data.trips[0]?.id||null;markDirty();renderTripRail();renderTripMain()};
+  $("#tDel").onclick=()=>{if(!confirm(T("删除行程「"+t.name+"」？","Delete trip “"+t.name+"”?")))return;state.data.trips=state.data.trips.filter(x=>x.id!==t.id);state.tripId=state.data.trips[0]?.id||null;markDirty();renderTripRail();renderTripMain()};
   m.querySelectorAll(".trip-tab").forEach(el=>el.onclick=()=>{state.tripTab=el.dataset.tab;renderTripMain()});
   renderTabBody();
 }
@@ -1086,12 +1167,12 @@ function renderTabBody(){const t=curTrip(),tab=state.tripTab,b=$("#tabBody");if(
 }
 function renderAlternates(t,b){const rows=t.alternates;
   b.innerHTML=`<div class="card">
-    <div class="ai-note" style="margin-bottom:12px">有时间就去、没时间就拉倒的备选点。AI 不会主动往这填——你在「路线规划」的对话框里说「把 ✕✕ 放备选」它才会帮你加。</div>
-    <div class="trk-add"><input id="aName" placeholder="备选地点名"><input id="aNote" placeholder="备注（可选：所在区域 / 为什么想去）"><button class="btn primary" id="aAdd">添加</button></div>
-    ${rows.length?`<table class="vtbl"><thead><tr><th>地点</th><th>备注</th><th class="c-del"></th></tr></thead><tbody>
+    <div class="ai-note" style="margin-bottom:12px">${T("有时间就去、没时间就拉倒的备选点。AI 不会主动往这填——你在「路线规划」的对话框里说「把 ✕✕ 放备选」它才会帮你加。","Backup spots — go if there’s time, skip if not. The AI won’t add here on its own; tell it “put ✕✕ in backups” in the Route chat and it will.")}</div>
+    <div class="trk-add"><input id="aName" placeholder="${T("备选地点名","Backup spot name")}"><input id="aNote" placeholder="${T("备注（可选：所在区域 / 为什么想去）","Note (optional: area / why)")}"><button class="btn primary" id="aAdd">${T("添加","Add")}</button></div>
+    ${rows.length?`<table class="vtbl"><thead><tr><th>${T("地点","Spot")}</th><th>${T("备注","Note")}</th><th class="c-del"></th></tr></thead><tbody>
       ${rows.map(e=>`<tr data-id="${e.id}"><td><span class="nm-cell" contenteditable data-f="name">${esc(e.name)}</span></td>
         <td><input class="note-in" data-f="note" value="${esc(e.note)}"></td>
-        <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody></table>`:`<div class="tbl-empty">暂无备选。</div>`}
+        <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody></table>`:`<div class="tbl-empty">${T("暂无备选。","No backups yet.")}</div>`}
   </div>`;
   const add=()=>{const nm=$("#aName").value.trim();if(!nm)return;t.alternates.push({id:uid(),name:nm,note:$("#aNote").value.trim()});markDirty();renderTripMain()};
   $("#aAdd").onclick=add;$("#aName").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
@@ -1107,11 +1188,11 @@ function renderTracker(t,key,b){const cfg=TRK[key],rows=t[key];
   b.innerHTML=`<div class="card">
     <div class="trk-add">
       ${cfg.hasType?`<select id="aType" class="status-sel">${cfg.types.map(x=>`<option>${x}</option>`).join("")}</select>`:""}
-      <input id="aName" placeholder="${cfg.label}名称">
-      <input id="aWhen" placeholder="日期/时间（如 6/12 或 6/12 19:30）" style="max-width:220px">
-      <button class="btn primary" id="aAdd">添加</button>
+      <input id="aName" placeholder="${trkLabel(key)}${T("名称"," name")}">
+      <input id="aWhen" placeholder="${T("日期/时间（如 6/12 或 6/12 19:30）","Date/time (e.g. 6/12 or 6/12 19:30)")}" style="max-width:220px">
+      <button class="btn primary" id="aAdd">${T("添加","Add")}</button>
     </div>
-    ${rows.length?`<table class="vtbl"><thead><tr>${cfg.hasType?'<th style="width:110px">类型</th>':''}<th>名称</th><th style="width:170px">日期/时间</th><th style="width:120px">状态</th><th>备注/确认号</th><th class="c-del"></th></tr></thead><tbody>
+    ${rows.length?`<table class="vtbl"><thead><tr>${cfg.hasType?`<th style="width:110px">${T("类型","Type")}</th>`:''}<th>${T("名称","Name")}</th><th style="width:170px">${T("日期/时间","Date/time")}</th><th style="width:120px">${T("状态","Status")}</th><th>${T("备注/确认号","Note/confirmation")}</th><th class="c-del"></th></tr></thead><tbody>
       ${rows.map(e=>`<tr data-id="${e.id}">
         ${cfg.hasType?`<td><select class="status-sel" data-f="type">${cfg.types.map(x=>`<option ${x===e.type?"selected":""}>${x}</option>`).join("")}</select></td>`:""}
         <td><span class="nm-cell" contenteditable data-f="name">${esc(e.name)}</span></td>
@@ -1119,7 +1200,7 @@ function renderTracker(t,key,b){const cfg=TRK[key],rows=t[key];
         <td><select class="status-sel ${stClass(cfg,e.status||cfg.statuses[0])}" data-f="status">${cfg.statuses.map(s=>`<option ${s===(e.status||cfg.statuses[0])?"selected":""}>${s}</option>`).join("")}</select></td>
         <td><input class="note-in" data-f="note" value="${esc(e.note)}"></td>
         <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}
-      </tbody></table>`:`<div class="tbl-empty">暂无。用上方添加。</div>`}
+      </tbody></table>`:`<div class="tbl-empty">${T("暂无。用上方添加。","None yet. Add above.")}</div>`}
   </div>`;
   const add=()=>{const nm=$("#aName").value.trim();if(!nm)return;const it=normItem({name:nm,when:$("#aWhen").value.trim(),status:cfg.statuses[0]});if(cfg.hasType)it.type=$("#aType").value;t[key].push(it);markDirty();renderTripMain()};
   $("#aAdd").onclick=add;$("#aName").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
@@ -1132,7 +1213,7 @@ function renderTracker(t,key,b){const cfg=TRK[key],rows=t[key];
 
 /* ---- AI 路线规划 ---- */
 async function callClaude(system,user,model,maxTokens){
-  const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
+  const key=state.settings.aiKey;if(!key)throw new Error(T("未设置 Anthropic API Key（点 ⚙ 填写）","No Anthropic API Key set (click ⚙ to add)"));
   const body={model,max_tokens:maxTokens||2200,system,messages:[{role:"user",content:user}]};
   if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
   if(state.think&&/sonnet|opus/.test(model)){const bud=Math.max(1024,Math.min(8000,(body.max_tokens)-1024));body.thinking={type:"enabled",budget_tokens:bud};}
@@ -1143,7 +1224,7 @@ async function callClaude(system,user,model,maxTokens){
   const j=await r.json();return (j.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("");
 }
 async function callClaudeChat(system,msgs,model,maxTokens){
-  const key=state.settings.aiKey;if(!key)throw new Error("未设置 Anthropic API Key（点 ⚙ 填写）");
+  const key=state.settings.aiKey;if(!key)throw new Error(T("未设置 Anthropic API Key（点 ⚙ 填写）","No Anthropic API Key set (click ⚙ to add)"));
   const body={model,max_tokens:maxTokens||8000,system,messages:msgs};
   if(state.web)body.tools=[{type:"web_search_20250305",name:"web_search",max_uses:5}];
   if(state.think&&/sonnet|opus/.test(model)){const bud=Math.max(1024,Math.min(8000,(body.max_tokens)-1024));body.thinking={type:"enabled",budget_tokens:bud};}
@@ -1155,41 +1236,41 @@ async function callClaudeChat(system,msgs,model,maxTokens){
 }
 function segTotal(t){return t.segments.reduce((a,s)=>a+(s.days||0),0)}
 function segRowHTML(s,i,n){return `<div class="fx-row seg-row" data-i="${i}">
-  <input data-f="place" value="${esc(s.place)}" placeholder="城市/地区，如 京都" style="flex:1;min-width:110px">
-  <input data-f="days" type="number" min="1" max="30" value="${s.days}" style="width:60px"><span>天</span>
+  <input data-f="place" value="${esc(s.place)}" placeholder="${T("城市/地区，如 京都","City/area, e.g. Kyoto")}" style="flex:1;min-width:110px">
+  <input data-f="days" type="number" min="1" max="30" value="${s.days}" style="width:60px"><span>${T("天","d")}</span>
   <button class="btn xbtn" data-up ${i===0?"disabled":""}>↑</button>
   <button class="btn xbtn" data-down ${i===n-1?"disabled":""}>↓</button>
   <button class="del" data-del>✕</button></div>`}
 function renderPlan(t,b){const dateDays=tripDays(t);
   b.innerHTML=`<div class="card plan-box">
-    <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px">分段行程 · 按顺序，每段一个城市/地区</div>
+    <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:9px">${T("分段行程 · 按顺序，每段一个城市/地区","Segments · in order, one city/area each")}</div>
     <div id="segList">${t.segments.map((s,i)=>segRowHTML(s,i,t.segments.length)).join("")}</div>
-    <button class="btn" id="segAdd" style="font-size:12px;padding:6px 10px">+ 添加一段</button>
+    <button class="btn" id="segAdd" style="font-size:12px;padding:6px 10px">${T("+ 添加一段","+ Add segment")}</button>
     <span class="ai-note" id="segTot"></span>
     <div class="plan-row" style="margin-top:14px">
-      <span>节奏</span><select id="pPace">${["轻松","适中","紧凑"].map(p=>`<option ${p===t.pace?"selected":""}>${p}</option>`).join("")}</select>
-      <input id="pInt" placeholder="偏好（美食/历史/亲子/摄影/购物…）" value="${esc(t.interests)}" style="flex:1;min-width:150px">
+      <span>${T("节奏","Pace")}</span><select id="pPace">${["轻松","适中","紧凑"].map(p=>`<option value="${p}" ${p===t.pace?"selected":""}>${T(p,{"轻松":"Relaxed","适中":"Moderate","紧凑":"Packed"}[p])}</option>`).join("")}</select>
+      <input id="pInt" placeholder="${T("偏好（美食/历史/亲子/摄影/购物…）","Interests (food/history/family/photo/shopping…)")}" value="${esc(t.interests)}" style="flex:1;min-width:150px">
     </div>
-    <div class="plan-row" style="margin-top:8px"><input id="pCities" placeholder="想去的城市（可选，逗号分隔）" value="${esc(t.wishCities||"")}" style="flex:1;min-width:150px"></div>
-    <div class="plan-row" style="margin-top:8px"><input id="pMust" placeholder="必去景点（可选，逗号分隔，会全部排入）" value="${esc(t.mustSee||"")}" style="flex:1;min-width:150px"></div>
-    <div class="plan-row" style="margin-top:8px"><input id="pFood" placeholder="想去的餐厅（可选，逗号分隔，排进就近餐时）" value="${esc(t.wishFood||"")}" style="flex:1;min-width:150px"></div>
+    <div class="plan-row" style="margin-top:8px"><input id="pCities" placeholder="${T("想去的城市（可选，逗号分隔）","Cities you want (optional, comma-separated)")}" value="${esc(t.wishCities||"")}" style="flex:1;min-width:150px"></div>
+    <div class="plan-row" style="margin-top:8px"><input id="pMust" placeholder="${T("必去景点（可选，逗号分隔，会全部排入）","Must-see spots (optional, comma-separated, all scheduled)")}" value="${esc(t.mustSee||"")}" style="flex:1;min-width:150px"></div>
+    <div class="plan-row" style="margin-top:8px"><input id="pFood" placeholder="${T("想去的餐厅（可选，逗号分隔，排进就近餐时）","Restaurants you want (optional, comma-separated)")}" value="${esc(t.wishFood||"")}" style="flex:1;min-width:150px"></div>
     <div class="plan-row" style="margin-top:8px;flex-direction:column;align-items:stretch;gap:6px">
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>每日可用时间</span><span class="ai-note" style="margin:0">默认每天 09:30–22:00，可单独给某天设不同时段</span></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span>${T("每日可用时间","Daily hours")}</span><span class="ai-note" style="margin:0">${T("默认每天 09:30–22:00，可单独给某天设不同时段","Default 09:30–22:00 daily; you can set different hours per day")}</span></div>
       <div id="dwList"></div>
-      <button class="btn" id="dwAdd" style="font-size:12px;padding:6px 10px;align-self:flex-start">+ 给某天设时段</button>
+      <button class="btn" id="dwAdd" style="font-size:12px;padding:6px 10px;align-self:flex-start">${T("+ 给某天设时段","+ Set hours for a day")}</button>
     </div>
-    <label class="plan-row" style="margin-top:10px;font-size:13px;color:var(--ink-soft);text-transform:none;letter-spacing:0;gap:8px;cursor:pointer"><input type="checkbox" id="pFlex" style="width:auto"> 🕊 灵活时间：只排必去点、每天留白，其余自动进「备选」由你手动填</label>
+    <label class="plan-row" style="margin-top:10px;font-size:13px;color:var(--ink-soft);text-transform:none;letter-spacing:0;gap:8px;cursor:pointer"><input type="checkbox" id="pFlex" style="width:auto"> ${T("🕊 灵活时间：只排必去点、每天留白，其余自动进「备选」由你手动填","🕊 Flexible: schedule only must-sees, leave gaps, the rest go to “Backups” for you to fill")}</label>
     <div class="plan-row" style="margin-top:10px">
-      <button class="btn primary" id="pGo">✨ AI 规划路线</button>
-      <span style="font-size:12px;color:var(--ink-soft)">本次模型</span>
-      <select id="pModel" class="status-sel"><option value="">跟随设置</option><option value="claude-haiku-4-5-20251001">Haiku 4.5</option><option value="claude-sonnet-4-6">Sonnet 4.6</option><option value="claude-opus-4-8">Opus 4.8</option></select>
-      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="pWeb" style="width:auto">🌐 联网</label>
-      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="pThink" style="width:auto">🧠 思考</label>
+      <button class="btn primary" id="pGo">${T("✨ AI 规划路线","✨ AI plan route")}</button>
+      <span style="font-size:12px;color:var(--ink-soft)">${T("本次模型","Model")}</span>
+      <select id="pModel" class="status-sel"><option value="">${T("跟随设置","Use settings")}</option><option value="claude-haiku-4-5-20251001">Haiku 4.5</option><option value="claude-sonnet-4-6">Sonnet 4.6</option><option value="claude-opus-4-8">Opus 4.8</option></select>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="pWeb" style="width:auto">${T("🌐 联网","🌐 Web")}</label>
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink-soft);text-transform:none;letter-spacing:0;margin:0"><input type="checkbox" id="pThink" style="width:auto">${T("🧠 思考","🧠 Think")}</label>
       <span id="pStat" class="ai-note"></span>
     </div>
-    <div class="ai-note">默认 ${({"claude-haiku-4-5-20251001":"Haiku 4.5","claude-sonnet-4-6":"Sonnet 4.6","claude-opus-4-8":"Opus 4.8"})[state.settings.planModel]||"Sonnet 4.6"}（设置可改）。会按片区聚类、就近排序、预留路上交通时间、控制在每日可用时间内、尽量不走回头路，并在城市间插入「交通」。注：模型按记忆估算，非真实班次/最短路径。</div>
+    <div class="ai-note">${T("默认 ","Default ")}${({"claude-haiku-4-5-20251001":"Haiku 4.5","claude-sonnet-4-6":"Sonnet 4.6","claude-opus-4-8":"Opus 4.8"})[state.settings.planModel]||"Sonnet 4.6"}${T("（设置可改）。会按片区聚类、就近排序、预留路上交通时间、控制在每日可用时间内、尽量不走回头路，并在城市间插入「交通」。注：模型按记忆估算，非真实班次/最短路径。"," (changeable in settings). Clusters by area, orders by proximity, reserves travel time, stays within daily hours, avoids backtracking, and inserts inter-city “transport”. Note: the model estimates from memory, not real schedules/shortest paths.")}</div>
   </div><div id="planOut"></div><div id="planHist"></div><div id="planChat"></div>`;
-  const updTot=()=>{const seg=segTotal(t);$("#segTot").innerHTML=` 共 ${seg} 天`+(dateDays&&seg!==dateDays?` <span style="color:var(--visited)">（日期跨度 ${dateDays} 天，不一致）</span>`:"")};
+  const updTot=()=>{const seg=segTotal(t);$("#segTot").innerHTML=T(` 共 ${seg} 天`,` ${seg} days total`)+(dateDays&&seg!==dateDays?` <span style="color:var(--visited)">${T(`（日期跨度 ${dateDays} 天，不一致）`,`(date span ${dateDays} days, mismatch)`)}</span>`:"")};
   updTot();
   $("#segAdd").onclick=()=>{t.segments.push({id:uid(),place:"",days:1});markDirty();renderTripMain()};
   b.querySelectorAll("#segList .seg-row").forEach(row=>{const i=+row.dataset.i,s=t.segments[i];
@@ -1218,8 +1299,8 @@ function renderDwList(t){
   const host=document.getElementById("dwList"); if(!host)return;
   const tot=segTotal(t)||99;
   const ws=t.dayWindows||[];
-  host.innerHTML=ws.map((w,i)=>`<div class="dw-row" data-i="${i}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px"><span>第</span><input data-f="day" type="number" min="1" max="${tot}" value="${w.day||""}" placeholder="几" style="width:64px"><span>天</span><input data-f="start" type="time" value="${w.start||""}" style="width:118px"><span>—</span><input data-f="end" type="time" value="${w.end||""}" style="width:118px"><button class="del" data-del title="删除">✕</button></div>`).join("")
-    +(ws.length?"":`<span class="ai-note" style="margin:0">未单独设置，全程按默认 09:30–22:00</span>`);
+  host.innerHTML=ws.map((w,i)=>`<div class="dw-row" data-i="${i}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px"><span>${T("第","Day")}</span><input data-f="day" type="number" min="1" max="${tot}" value="${w.day||""}" placeholder="${T("几","#")}" style="width:64px"><span>${T("天","")}</span><input data-f="start" type="time" value="${w.start||""}" style="width:118px"><span>—</span><input data-f="end" type="time" value="${w.end||""}" style="width:118px"><button class="del" data-del title="${T("删除","Delete")}">✕</button></div>`).join("")
+    +(ws.length?"":`<span class="ai-note" style="margin:0">${T("未单独设置，全程按默认 09:30–22:00","Not set; default 09:30–22:00 throughout")}</span>`);
   host.querySelectorAll(".dw-row").forEach(row=>{const i=+row.dataset.i,w=t.dayWindows[i];
     row.querySelector('[data-f="day"]').oninput=e=>{w.day=parseInt(e.target.value)||"";markDirty()};
     row.querySelector('[data-f="start"]').onchange=e=>{w.start=e.target.value;markDirty()};
@@ -1229,22 +1310,22 @@ function renderDwList(t){
 }
 function renderHistory(t,box){if(!box)return;const h=t.history||[];
   if(!h.length){box.innerHTML="";return}
-  box.innerHTML=`<div class="card"><h3>🕘 历史版本 <span class="avg">${h.length}</span></h3>
+  box.innerHTML=`<div class="card"><h3>${T("🕘 历史版本","🕘 History")} <span class="avg">${h.length}</span></h3>
     ${h.map((v,i)=>`<div class="hist-row" data-i="${i}">
-      <span class="hist-meta"><b>${new Date(v.ts).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</b>${v.label?" · "+esc(v.label):""} · ${(v.itinerary.days||[]).length}天</span>
-      <button class="btn xbtn" data-view>查看</button><button class="btn xbtn" data-restore>恢复</button>
+      <span class="hist-meta"><b>${new Date(v.ts).toLocaleString(lang==="en"?"en-US":"zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}</b>${v.label?" · "+esc(v.label):""} · ${(v.itinerary.days||[]).length}${T("天","d")}</span>
+      <button class="btn xbtn" data-view>${T("查看","View")}</button><button class="btn xbtn" data-restore>${T("恢复","Restore")}</button>
       <details class="hist-json"><summary></summary><pre>${esc(JSON.stringify(v.itinerary,null,1).slice(0,6000))}</pre></details>
     </div>`).join("")}</div>`;
   box.querySelectorAll(".hist-row").forEach(row=>{const v=h[+row.dataset.i];
     row.querySelector("[data-view]").onclick=()=>{const d=row.querySelector(".hist-json");d.open=!d.open};
-    row.querySelector("[data-restore]").onclick=()=>{if(!confirm("恢复到该版本？当前行程会先存入历史。"))return;
-      snapItinerary(t,"恢复前");t.itinerary=JSON.parse(JSON.stringify(v.itinerary));markDirty();renderTripMain();toast("已恢复该版本")};
+    row.querySelector("[data-restore]").onclick=()=>{if(!confirm(T("恢复到该版本？当前行程会先存入历史。","Restore this version? The current itinerary is saved to history first.")))return;
+      snapItinerary(t,T("恢复前","before restore"));t.itinerary=JSON.parse(JSON.stringify(v.itinerary));markDirty();renderTripMain();toast(T("已恢复该版本","Version restored"))};
   });
 }
 function renderChat(t,box){if(!box)return;const log=tripChat(t);
-  box.innerHTML=`<div class="card"><h3>与 AI 对话修改行程 ${log.length?'<button class="del" id="chatClr" title="清空对话" style="font-size:13px">清空</button>':''}</h3>
-    <div class="chat-log" id="chatLog">${log.length?log.map(m=>`<div class="chat-msg ${m.role}${m.edited?" edited":""}">${esc(m.text)}</div>`).join(""):'<div class="chat-empty">先生成或填好行程，再在这里说你的修改/补充。<br>例：「第2天下午改成购物」「京都那天加个怀石料理午餐」「第3天太赶，去掉一个景点」「推荐附近一家拉面」。</div>'}<div id="chatBusy"></div></div>
-    <div class="chat-in"><input id="chatIn" placeholder="说出你的修改/补充，回车发送…"><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap"><input type="checkbox" id="chatWeb" style="width:auto">🌐</label><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap"><input type="checkbox" id="chatThink" style="width:auto">🧠</label><button class="btn primary" id="chatSend">发送</button></div></div>`;
+  box.innerHTML=`<div class="card"><h3>${T("与 AI 对话修改行程","Chat with AI to edit the trip")} ${log.length?`<button class="del" id="chatClr" title="${T("清空对话","Clear chat")}" style="font-size:13px">${T("清空","Clear")}</button>`:''}</h3>
+    <div class="chat-log" id="chatLog">${log.length?log.map(m=>`<div class="chat-msg ${m.role}${m.edited?" edited":""}">${esc(m.text)}</div>`).join(""):`<div class="chat-empty">${T('先生成或填好行程，再在这里说你的修改/补充。<br>例：「第2天下午改成购物」「京都那天加个怀石料理午餐」「第3天太赶，去掉一个景点」「推荐附近一家拉面」。','Generate or fill in the itinerary first, then describe your edits/additions here.<br>e.g. “make Day 2 afternoon shopping”, “add a kaiseki lunch on the Kyoto day”, “Day 3 is too packed, drop a spot”, “recommend a ramen place nearby”.')}</div>`}<div id="chatBusy"></div></div>
+    <div class="chat-in"><input id="chatIn" placeholder="${T("说出你的修改/补充，回车发送…","Describe your edit/addition, Enter to send…")}"><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap"><input type="checkbox" id="chatWeb" style="width:auto">🌐</label><label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-soft);white-space:nowrap"><input type="checkbox" id="chatThink" style="width:auto">🧠</label><button class="btn primary" id="chatSend">${T("发送","Send")}</button></div></div>`;
   const lg=$("#chatLog");if(lg)lg.scrollTop=lg.scrollHeight;
   $("#chatWeb").checked=state.web;$("#chatWeb").onchange=e=>{state.web=e.target.checked};
   $("#chatThink").checked=state.think;$("#chatThink").onchange=e=>{state.think=e.target.checked};
@@ -1254,7 +1335,7 @@ function renderChat(t,box){if(!box)return;const log=tripChat(t);
 }
 async function sendChat(t,text){const log=tripChat(t);pushChat(t,{role:"user",text});
   const box=$("#planChat");renderChat(t,box);
-  const busy=$("#chatBusy");if(busy)busy.innerHTML=`<div class="chat-msg assistant"><span class="spin"></span> 思考中…</div>`;
+  const busy=$("#chatBusy");if(busy)busy.innerHTML=`<div class="chat-msg assistant"><span class="spin"></span> ${T("思考中…","Thinking…")}</div>`;
   const model=($("#pModel")&&$("#pModel").value)||state.settings.planModel||"claude-sonnet-4-6";
   const segText=t.segments.filter(s=>s.place.trim()).map((s,i)=>`${i+1}. ${s.place} — ${s.days}天`).join("\n")||(t.destination||"");
   const sys="你正在与用户一起迭代修改一份旅行行程。\n当前分段：\n"+segText+"\n当前行程(JSON)：\n"+JSON.stringify(t.itinerary)
@@ -1264,7 +1345,7 @@ async function sendChat(t,text){const log=tripChat(t);pushChat(t,{role:"user",te
     +"② 若用户只是提问、不需要改行程：正常用中文回答，【不要】输出 JSON。"
     +"③ 关于「备选地点」：这是用户手动管理的清单。你【绝不】主动把任何点加入备选或从行程移到备选。"
     +"只有当用户明确要求（如「把✕✕放备选/加到备选」「把备选里的✕✕加进第2天」）时，才改动备选：在上面的 JSON 里【额外】加一个 alternates:[{name,note}] 字段表示更新后的完整备选清单；没有改动备选时【不要】包含 alternates 字段。"
-    +"保持同片区聚类、少折返、用餐就近、城际交通注明方式与耗时等原则。中文。"+(state.web?WEB_GUIDE:"");
+    +"保持同片区聚类、少折返、用餐就近、城际交通注明方式与耗时等原则。中文。"+(state.web?WEB_GUIDE:"")+AILANG();
   const msgs=log.slice(-10).map(m=>({role:m.role,content:m.text}));
   const days=(t.itinerary.days||[]).length||t.segments.reduce((a,s)=>a+(s.days||1),0)||3;
   try{const raw=await callClaudeChat(sys,msgs,model,Math.min(16000,3500+days*1100));
@@ -1285,17 +1366,17 @@ async function sendChat(t,text){const log=tripChat(t);pushChat(t,{role:"user",te
         }
       }
     }
-    pushChat(t,{role:"assistant",text:say||"（已更新行程）",edited});
+    pushChat(t,{role:"assistant",text:say||T("（已更新行程）","(itinerary updated)"),edited});
     renderTripMain();  // 刷新行程 + 对话
-  }catch(err){pushChat(t,{role:"assistant",text:"出错了："+err.message});renderTripMain()}
+  }catch(err){pushChat(t,{role:"assistant",text:T("出错了：","Error: ")+err.message});renderTripMain()}
 }
 function renderItinerary(t,out){const it=t.itinerary;
-  if(!it.days.length){out.innerHTML=`<div class="tbl-empty">还没有路线。填好分段（城市+天数）与偏好，点「AI 规划路线」。</div>`;return}
+  if(!it.days.length){out.innerHTML=`<div class="tbl-empty">${T("还没有路线。填好分段（城市+天数）与偏好，点「AI 规划路线」。","No route yet. Fill in segments (city + days) and interests, then click “AI plan route”.")}</div>`;return}
   out.innerHTML=it.days.map(d=>`<div class="day-card"><div class="day-hd"><span>Day ${d.day}${d.place?" · "+esc(d.place):""}${d.title?" · "+esc(d.title):""}</span><span class="d-date">${esc(d.date||"")}</span></div>
     ${d.stops.map(s=>{const fl=/灵活|自由/.test(s.type)||/灵活时间/.test(s.name);return `<div class="stop${fl?' flex':''}"><span class="t">${esc(s.time||"")}</span><div class="body"><b>${fl?"🕊 ":""}${esc(s.name)}</b>${s.type&&!fl?`<span class="tp">${esc(s.type)}</span>`:""}${s.area?`<span class="tp">${esc(s.area)}</span>`:""}${s.note?`<span class="n">${esc(s.note)}</span>`:""}</div></div>`}).join("")}
     </div>`).join("")
-    +(it.tips.length?`<div class="card"><h3>提示</h3><ul class="tips">${it.tips.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"")
-    +`<button class="btn" id="impList">⬇ 把景点/餐厅/交通导入对应清单</button> <button class="btn" id="liteExport">📤 导出省流版</button>`;
+    +(it.tips.length?`<div class="card"><h3>${T("提示","Tips")}</h3><ul class="tips">${it.tips.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"")
+    +`<button class="btn" id="impList">${T("⬇ 把景点/餐厅/交通导入对应清单","⬇ Import attractions/restaurants/transport to trackers")}</button> <button class="btn" id="liteExport">${T("📤 导出省流版","📤 Export lite")}</button>`;
   $("#impList").onclick=()=>{let na=0,nr=0,nt=0;const ex=k=>new Set(t[k].map(e=>e.name.replace(/\s/g,"").toLowerCase()));
     const ea=ex("attractions"),er=ex("restaurants"),et=ex("transport");
     const transp=ty=>/交通|移动|前往|飞|航班|机场|火车|高铁|新干线|铁|巴士|大巴|船|渡轮|地铁|打车|包车|租车/.test(ty);
@@ -1304,7 +1385,7 @@ function renderItinerary(t,out){const it=t.itinerary;
       if(transp(s.type)||transp(s.name)){if(!et.has(k)){const it2=normItem({name:s.name,when,status:"未预订",note:s.area||d.place});it2.type=tsub(s.type+s.name);t.transport.push(it2);et.add(k);nt++}}
       else if(/餐厅|美食|吃|饭|食/.test(s.type)){if(!er.has(k)){t.restaurants.push(normItem({name:s.name,when,status:"待定",note:s.area||d.place}));er.add(k);nr++}}
       else{if(!ea.has(k)){t.attractions.push(normItem({name:s.name,when:d.date||("Day"+d.day),status:"待定",note:s.area||d.place}));ea.add(k);na++}}}));
-    markDirty();toast(`已导入 ${na} 景点、${nr} 餐厅、${nt} 交通`);renderTripMain()};
+    markDirty();toast(T(`已导入 ${na} 景点、${nr} 餐厅、${nt} 交通`,`Imported ${na} attractions, ${nr} restaurants, ${nt} transport`));renderTripMain()};
   $("#liteExport").onclick=()=>openExport(t);
 }
 function tryRepairJSON(s){try{let str=s,inStr=false,esc2=false,stack=[];const close={'{':'}','[':']'};
@@ -1313,14 +1394,14 @@ function tryRepairJSON(s){try{let str=s,inStr=false,esc2=false,stack=[];const cl
   if(inStr)str+='"';str=str.replace(/,\s*$/,'');while(stack.length)str+=stack.pop();return JSON.parse(str)}catch(e){return null}}
 async function runPlan(t){const stat=$("#pStat");
   let segs=t.segments.filter(s=>s.place.trim());
-  if(!segs.length){if(t.destination.trim())segs=[{place:t.destination.trim(),days:tripDays(t)||3}];else{toast("先填至少一段（城市+天数）",true);return}}
+  if(!segs.length){if(t.destination.trim())segs=[{place:t.destination.trim(),days:tripDays(t)||3}];else{toast(T("先填至少一段（城市+天数）","Add at least one segment (city + days) first"),true);return}}
   const totalDays=segs.reduce((a,s)=>a+(s.days||1),0),pace=$("#pPace").value,intr=$("#pInt").value.trim();
   const wishCities=($("#pCities").value||"").trim(),mustSee=($("#pMust").value||"").trim(),wishFood=($("#pFood").value||"").trim();
   const dwList=(t.dayWindows||[]).filter(w=>w.day&&(w.start||w.end)).map(w=>`第${w.day}天 ${w.start||"09:30"}–${w.end||"22:00"}`);
   const dwText=dwList.length?dwList.join("、"):"";
   const model=$("#pModel").value||state.settings.planModel||"claude-sonnet-4-6";
   const mname={"claude-haiku-4-5-20251001":"Haiku 4.5","claude-sonnet-4-6":"Sonnet 4.6","claude-opus-4-8":"Opus 4.8"}[model]||model;
-  stat.innerHTML=`<span class="spin"></span> 规划中（${mname}）…`;$("#pGo").disabled=true;
+  stat.innerHTML=`<span class="spin"></span> ${T("规划中（","Planning (")}${mname}${T("）…",")…")}`;$("#pGo").disabled=true;
   const segText=segs.map((s,i)=>`${i+1}. ${s.place} — ${s.days}天`).join("\n");
   const flex=!!t.flexible;
   const sys="你是资深旅行规划师。在给定【分段行程】(按顺序的城市+天数)内，排出实际可行、省时、少折返的逐日路线。原则："
@@ -1339,7 +1420,7 @@ async function runPlan(t){const stat=$("#pStat");
       :'JSON结构:{"days":[{"day":1,"date":"","place":"城市","title":"片区/主题","stops":[{"time":"09:00","name":"地点/餐厅","type":"景点|餐厅|活动|交通","area":"片区","note":"含移动方式/时长"}]}],"tips":["提示"]}。')
     +"严格按分段顺序与天数分配每一天，day.place 标注当天城市。中文。给了起始日期则按真实日期填 date(YYYY-MM-DD)。"
     +(flex?"":"注意：用户另有「备选地点」清单由其自行管理，你不要在输出里包含 alternates，也不要替用户把点放进备选。")
-    +(state.web?WEB_GUIDE:"");
+    +(state.web?WEB_GUIDE:"")+AILANG();
   const user=`分段（按顺序，共 ${totalDays} 天）：\n${segText}\n总目的地：${t.destination||segs.map(s=>s.place).join("、")}\n节奏：${pace}\n偏好：${intr||"通用"}\n每日可用时间：默认 09:30–22:00${dwText?`；特殊：${dwText}`:""}（排期含路上交通时间）\n`
     +(wishCities?`想去的城市：${wishCities}\n`:"")
     +(mustSee?`必去景点（必须全部排入）：${mustSee}\n`:"")
@@ -1350,18 +1431,18 @@ async function runPlan(t){const stat=$("#pStat");
     let txt=raw;const mk=txt.lastIndexOf("===JSON===");if(mk>=0)txt=txt.slice(mk+10);
     txt=txt.replace(/```json|```/g,"").trim();const a=txt.indexOf("{"),z=txt.lastIndexOf("}");if(a>=0&&z>a)txt=txt.slice(a,z+1);
     let data;try{data=JSON.parse(txt)}catch(pe){data=tryRepairJSON(txt)}
-    if(!data||!Array.isArray(data.days)||!data.days.length)throw new Error("返回内容无法解析为行程（可能被截断或不是纯 JSON）");
+    if(!data||!Array.isArray(data.days)||!data.days.length)throw new Error(T("返回内容无法解析为行程（可能被截断或不是纯 JSON）","Response couldn’t be parsed as an itinerary (truncated or not pure JSON)"));
     snapItinerary(t,"AI 规划"+(flex?"·灵活":""));
     if(t.startDate){const base=new Date(t.startDate);data.days.forEach((d,i)=>{if(!d.date){const dt=new Date(base);dt.setDate(base.getDate()+i);d.date=dt.toISOString().slice(0,10)}})}
     t.itinerary={days:data.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(x=>({time:x.time||"",name:x.name||"",type:x.type||"",area:x.area||"",note:x.note||""}))})),tips:data.tips||[]};
     if(flex&&Array.isArray(data.alternates)){const have=new Set(t.alternates.map(a=>a.name.replace(/\s/g,"").toLowerCase()));
       data.alternates.forEach(x=>{const k=(x.name||"").replace(/\s/g,"").toLowerCase();if(x.name&&!have.has(k)){t.alternates.push({id:uid(),name:x.name,note:x.note||""});have.add(k)}});}
-    markDirty();stat.textContent="";renderTripMain();toast(flex?"灵活行程已生成，其余点已进备选 ✓":"分段路线已生成 ✓");
+    markDirty();stat.textContent="";renderTripMain();toast(flex?T("灵活行程已生成，其余点已进备选 ✓","Flexible itinerary generated, extras moved to Backups ✓"):T("分段路线已生成 ✓","Route generated ✓"));
   }catch(err){stat.textContent="";$("#pGo").disabled=false;const out=$("#planOut");
-    if(out)out.innerHTML=`<div class="card"><h3 style="color:var(--resided);letter-spacing:0;text-transform:none">规划失败</h3>
-      <p style="font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:8px">${esc(err.message)}。<br>建议：再点一次重试；长行程可拆成两段分别规划；或在 ⚙ 设置切到 <b>Sonnet 4.6</b>（更稳）。</p>
-      ${state._lastAI?`<details><summary style="cursor:pointer;font-size:12px;color:var(--ink-faint)">查看 AI 原始返回（排查用）</summary><pre style="white-space:pre-wrap;font-size:11px;background:var(--surface-2);padding:10px;border-radius:8px;max-height:320px;overflow:auto">${esc(state._lastAI.slice(0,5000))}</pre></details>`:""}</div>`;
-    toast("规划失败："+err.message,true)}
+    if(out)out.innerHTML=`<div class="card"><h3 style="color:var(--resided);letter-spacing:0;text-transform:none">${T("规划失败","Planning failed")}</h3>
+      <p style="font-size:13px;color:var(--ink-soft);line-height:1.7;margin-bottom:8px">${esc(err.message)}。<br>${T("建议：再点一次重试；长行程可拆成两段分别规划；或在 ⚙ 设置切到 <b>Sonnet 4.6</b>（更稳）。","Try again; for long trips, split into two and plan separately; or switch to <b>Sonnet 4.6</b> in ⚙ settings (more reliable).")}</p>
+      ${state._lastAI?`<details><summary style="cursor:pointer;font-size:12px;color:var(--ink-faint)">${T("查看 AI 原始返回（排查用）","View raw AI response (debug)")}</summary><pre style="white-space:pre-wrap;font-size:11px;background:var(--surface-2);padding:10px;border-radius:8px;max-height:320px;overflow:auto">${esc(state._lastAI.slice(0,5000))}</pre></details>`:""}</div>`;
+    toast(T("规划失败：","Planning failed: ")+err.message,true)}
 }
 
 /* ---- 兑换 + 记账 ---- */
@@ -1371,26 +1452,26 @@ function renderMoney(t,b){const home=t.homeCurrency||"CNY";
   const totals={};t.expenses.forEach(e=>{totals[e.cur]=(totals[e.cur]||0)+e.amount});
   let homeTot=0,unknown=false;t.expenses.forEach(e=>{const r=rate(e.cur);if(r==null)unknown=true;else homeTot+=e.amount*r});
   b.innerHTML=`
-  <div class="card"><h3>汇率（1 外币 = ? ${esc(home)}）</h3>
+  <div class="card"><h3>${T("汇率（1 外币 = ? ","Exchange rate (1 foreign = ? ")}${esc(home)}${T("）",")")}</h3>
     <div id="fxList">${t.fx.map((f,i)=>`<div class="fx-row" data-i="${i}"><input data-f="cur" value="${esc(f.cur)}" placeholder="USD" style="text-transform:uppercase"><span>=</span><input data-f="rate" type="number" step="0.0001" value="${f.rate??""}" placeholder="7.2"><span>${esc(home)}</span><button class="del" data-del>✕</button></div>`).join("")}</div>
-    <button class="btn" id="fxAdd" style="font-size:12px;padding:6px 10px">+ 币种</button>
-    <div class="plan-row" style="margin-top:14px"><b style="font-weight:600">换算</b><input id="cvAmt" type="number" placeholder="金额" style="width:120px"><select id="cvCur">${curs.map(c=>`<option>${esc(c)}</option>`).join("")}</select><span>→</span><span id="cvOut" class="money" style="font-weight:700;color:var(--accent)">—</span></div>
+    <button class="btn" id="fxAdd" style="font-size:12px;padding:6px 10px">${T("+ 币种","+ Currency")}</button>
+    <div class="plan-row" style="margin-top:14px"><b style="font-weight:600">${T("换算","Convert")}</b><input id="cvAmt" type="number" placeholder="${T("金额","Amount")}" style="width:120px"><select id="cvCur">${curs.map(c=>`<option>${esc(c)}</option>`).join("")}</select><span>→</span><span id="cvOut" class="money" style="font-weight:700;color:var(--accent)">—</span></div>
   </div>
-  <div class="card"><h3>记账 <span class="avg">${t.expenses.length} 笔</span></h3>
+  <div class="card"><h3>${T("记账","Expenses")} <span class="avg">${t.expenses.length} ${T("笔","")}</span></h3>
     <div class="trk-add">
-      <input id="eDate" type="date" style="max-width:150px"><input id="eCat" placeholder="分类（餐饮/交通/门票/购物…）" style="max-width:180px">
-      <input id="eAmt" type="number" placeholder="金额" style="max-width:110px"><select id="eCur" class="status-sel">${curs.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
-      <input id="eNote" placeholder="备注"><button class="btn primary" id="eAdd">记一笔</button>
+      <input id="eDate" type="date" style="max-width:150px"><input id="eCat" placeholder="${T("分类（餐饮/交通/门票/购物…）","Category (food/transport/tickets/shopping…)")}" style="max-width:180px">
+      <input id="eAmt" type="number" placeholder="${T("金额","Amount")}" style="max-width:110px"><select id="eCur" class="status-sel">${curs.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+      <input id="eNote" placeholder="${T("备注","Note")}"><button class="btn primary" id="eAdd">${T("记一笔","Add")}</button>
     </div>
-    ${t.expenses.length?`<table class="vtbl"><thead><tr><th style="width:120px">日期</th><th>分类</th><th style="width:120px">金额</th><th style="width:80px">币种</th><th>备注</th><th class="c-del"></th></tr></thead><tbody>
+    ${t.expenses.length?`<table class="vtbl"><thead><tr><th style="width:120px">${T("日期","Date")}</th><th>${T("分类","Category")}</th><th style="width:120px">${T("金额","Amount")}</th><th style="width:80px">${T("币种","Currency")}</th><th>${T("备注","Note")}</th><th class="c-del"></th></tr></thead><tbody>
       ${t.expenses.map(e=>`<tr data-id="${e.id}"><td><input class="note-in" data-f="date" type="date" value="${e.date}"></td>
         <td><input class="note-in" data-f="cat" value="${esc(e.cat)}"></td>
         <td><input class="rate-in" data-f="amount" type="number" value="${e.amount}"></td>
         <td><input class="note-in" data-f="cur" value="${esc(e.cur)}" style="width:64px;text-transform:uppercase"></td>
         <td><input class="note-in" data-f="note" value="${esc(e.note)}"></td>
-        <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody></table>`:`<div class="tbl-empty">还没有账目。</div>`}
+        <td class="c-del"><button class="del" data-del>✕</button></td></tr>`).join("")}</tbody></table>`:`<div class="tbl-empty">${T("还没有账目。","No expenses yet.")}</div>`}
     <div class="totbar">${Object.keys(totals).length?Object.entries(totals).map(([c,v])=>`<span>${esc(c)} <b>${v.toFixed(2)}</b></span>`).join(""):""}
-      <span>合计(${esc(home)}) <b>≈ ${homeTot.toFixed(2)}</b>${unknown?' <span class="ai-note">(部分币种缺汇率)</span>':''}</span></div>
+      <span>${T("合计(","Total(")}${esc(home)}) <b>≈ ${homeTot.toFixed(2)}</b>${unknown?` <span class="ai-note">${T("(部分币种缺汇率)","(some currencies missing rates)")}</span>`:''}</span></div>
   </div>`;
   // fx wiring
   $("#fxAdd").onclick=()=>{t.fx.push({cur:"",rate:null});markDirty();renderTripMain()};
@@ -1403,7 +1484,7 @@ function renderMoney(t,b){const home=t.homeCurrency||"CNY";
   const calc=()=>{const a=parseFloat($("#cvAmt").value);const c=$("#cvCur").value;const r=rate(c);$("#cvOut").textContent=(isNaN(a)||r==null)?"—":`${(a*r).toFixed(2)} ${home}`};
   $("#cvAmt").oninput=calc;$("#cvCur").onchange=calc;
   // expense add
-  const addE=()=>{const amt=parseFloat($("#eAmt").value);if(isNaN(amt)){toast("填金额",true);return}
+  const addE=()=>{const amt=parseFloat($("#eAmt").value);if(isNaN(amt)){toast(T("填金额","Enter an amount"),true);return}
     t.expenses.push({id:uid(),date:$("#eDate").value||new Date().toISOString().slice(0,10),cat:$("#eCat").value.trim(),amount:amt,cur:$("#eCur").value,note:$("#eNote").value.trim()});markDirty();renderTripMain()};
   $("#eAdd").onclick=addE;$("#eAmt").addEventListener("keydown",e=>{if(e.key==="Enter")addE()});
   b.querySelectorAll("tbody tr").forEach(tr=>{const e=t.expenses.find(x=>x.id===tr.dataset.id);if(!e)return;
@@ -1421,7 +1502,7 @@ window.addEventListener("beforeunload",e=>{if(state.dirty){e.preventDefault();e.
 
 fetch("regions.geojson").then(r=>r.ok?r.json():null).then(j=>{if(j){state.regions=j;state.cityRegion={};refreshMap()}}).catch(()=>{});
 
-renderList();updateStatus();state.web=state.settings.webSearch!==false;state.think=state.settings.thinking!==false;
+applyStatic();renderList();updateStatus();state.web=state.settings.webSearch!==false;state.think=state.settings.thinking!==false;
 if(state.settings.owner&&state.settings.repo&&state.settings.token)loadData();else setTimeout(openSettings,400);
 </script>
 </body>
