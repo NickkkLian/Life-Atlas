@@ -231,6 +231,25 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
 .stop .n{font-size:12px;color:var(--ink-soft);display:block;margin-top:2px}
 .stop.flex{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 7px,transparent 7px,transparent 14px)}
 .stop.flex .t{color:var(--ink-faint)} .stop.flex .body b{color:var(--accent);font-weight:600}
+/* 分头行动 split */
+.split-bar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 14px;background:var(--accent-soft);border-bottom:1px solid var(--line);font-size:12.5px}
+.split-bar .t{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent);flex:none}
+.split-bar b{font-weight:600}.split-bar .who{color:var(--ink-soft)}
+.split-bar .ai-pick{margin-left:auto;font-size:11px;background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--ink-soft)}
+.split-lanes{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 14px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+@media(max-width:640px){.split-lanes{grid-template-columns:1fr}}
+.party-lane{border:1px solid var(--line-2);border-top-width:3px;border-radius:10px;padding:9px 11px;background:var(--surface)}
+.party-lane .ph{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin-bottom:1px}
+.party-lane .pw{font-size:11px;color:var(--ink-faint);margin-bottom:7px}
+.party-lane .pstop{display:flex;gap:9px;align-items:baseline;margin-top:6px;flex-wrap:wrap}
+.party-lane .pstop .t{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--ink-faint);flex:none;width:40px}
+.party-lane .pstop b{font-size:13px;font-weight:500}
+.party-lane .pstop .n{flex-basis:100%;font-size:11px;color:var(--ink-soft);padding-left:49px}
+.day-hd .mini{font-size:11px;font-weight:500;padding:3px 10px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink-soft);cursor:pointer}
+.day-hd .mini:hover{border-color:var(--accent);color:var(--accent)}
+.sp-party-ed{border:1px solid var(--line-2);border-radius:12px;padding:12px 12px 4px;margin-bottom:10px;position:relative}
+.sp-rm-p{position:absolute;top:7px;right:9px;cursor:pointer;color:var(--ink-faint);font-size:14px;background:none;border:none;line-height:1}
+.sp-rm-p:hover{color:var(--resided,#c0392b)}
 .tips{font-size:13px;color:var(--ink-soft);line-height:1.7;padding-left:18px}
 .trip-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 16px}
 .trip-tab{font-size:13px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--line-2);background:var(--surface);cursor:pointer}
@@ -399,6 +418,9 @@ label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase
     <div class="trip-main" id="tripMain"></div>
   </div></div>
 </div>
+
+<!-- 分头行动 split editor -->
+<div class="overlay" id="splitOverlay"><div class="modal" id="splitModal"></div></div>
 
 <!-- settings -->
 <div class="overlay" id="overlay">
@@ -921,6 +943,17 @@ const TRK={
 };
 const trkLabel=k=>{const c=TRK[k];return c?(lang==="en"?c.en:c.label):k;};
 function normItem(e){return{id:e.id||uid(),type:e.type||"",name:e.name||"",when:e.when||"",status:e.status||"",note:e.note||""}}
+function normStops(a){return (Array.isArray(a)?a:[]).map(s=>({time:s.time||"",name:s.name||"",type:s.type||"",area:s.area||"",note:s.note||""}))}
+/* 分头行动：展开某天为「共同→分头→汇合」的扁平顺序（导出/长图用）；无分头则原样返回 */
+const SPLIT_PC=["#7c6cd6","#3b82c4","#c4763b","#3ba883"];
+function flatDayForExport(d){const sp=(d.splits||[])[0];if(!sp)return d.stops||[];
+  const before=(d.stops||[]).filter(s=>!s.time||s.time<=sp.from.time),after=(d.stops||[]).filter(s=>s.time&&s.time>sp.from.time);
+  const out=[...before];out.push({time:sp.from.time||"",name:"🔀 "+T("分头","Split")+(sp.from.place?" · "+sp.from.place:""),type:"",area:"",note:""});
+  (sp.parties||[]).forEach(p=>{const spots=(p.stops||[]).map(s=>s.name).filter(Boolean).join(" → ");out.push({time:"",name:(p.name||"")+(p.members?"·"+p.members:"")+"： "+(spots||T("自由活动","free")),type:"",area:"",note:""})});
+  out.push({time:sp.to.time||"",name:"🤝 "+T("汇合","Rejoin")+(sp.to.place?" · "+sp.to.place:""),type:"",area:"",note:""});
+  return [...out,...after];}
+/* 所有真实 stop（含各队），供导入清单/追踪用；不含分头标记 */
+function realStops(d){return (d.stops||[]).concat((d.splits||[]).flatMap(sp=>(sp.parties||[]).flatMap(p=>p.stops||[])))}
 function normalizeTrip(t){t=t||{};
   const it=t.itinerary||{};
   return{id:t.id||uid(),name:t.name||T("未命名行程","Untitled trip"),destination:t.destination||"",startDate:t.startDate||"",endDate:t.endDate||"",
@@ -928,7 +961,7 @@ function normalizeTrip(t){t=t||{};
     wishCities:t.wishCities||"",mustSee:t.mustSee||"",wishFood:t.wishFood||"",
     dayWindows:Array.isArray(t.dayWindows)?t.dayWindows.map(w=>({day:parseInt(w.day)||"",start:w.start||"",end:w.end||""})):[],
     segments:Array.isArray(t.segments)?t.segments.map(s=>({id:s.id||uid(),place:s.place||"",days:Math.max(1,parseInt(s.days)||1)})):[],
-    itinerary:{days:Array.isArray(it.days)?it.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:(d.stops||[]).map(s=>({time:s.time||"",name:s.name||"",type:s.type||"",area:s.area||"",note:s.note||""}))})):[],tips:Array.isArray(it.tips)?it.tips:[]},
+    itinerary:{days:Array.isArray(it.days)?it.days.map(d=>({day:d.day,date:d.date||"",place:d.place||"",title:d.title||"",stops:normStops(d.stops),splits:Array.isArray(d.splits)?d.splits.map(sp=>({id:sp.id||uid(),from:{time:(sp.from&&sp.from.time)||"",place:(sp.from&&sp.from.place)||""},to:{time:(sp.to&&sp.to.time)||"",place:(sp.to&&sp.to.place)||""},aiPicked:!!sp.aiPicked,parties:Array.isArray(sp.parties)?sp.parties.map(p=>({id:p.id||uid(),name:p.name||"",members:p.members||"",wants:p.wants||"",stops:normStops(p.stops)})):[]})):[]})):[],tips:Array.isArray(it.tips)?it.tips:[]},
     hotels:(t.hotels||[]).map(normItem),attractions:(t.attractions||[]).map(normItem),restaurants:(t.restaurants||[]).map(normItem),
     transport:(t.transport||[]).map(normItem),network:(t.network||[]).map(normItem),
     homeCurrency:t.homeCurrency||"CNY",fx:Array.isArray(t.fx)?t.fx.map(x=>({cur:x.cur||"",rate:x.rate})):[],
@@ -948,9 +981,19 @@ function buildLiteText(t){const it=t.itinerary,lines=[];
   if(dest)head+=" · "+dest;
   const dr=(t.startDate&&t.endDate)?`${t.startDate} ~ ${t.endDate}`:(it.days.length?it.days.length+T("天"," days"):"");
   lines.push(head+(dr?`（${dr}）`:""));lines.push("");
-  it.days.forEach(d=>{const spots=d.stops.filter(s=>!/灵活|自由|交通/.test(s.type)&&!/灵活时间/.test(s.name)).map(s=>s.name).filter(Boolean);
-    const dl=d.date?d.date.slice(5):"";
-    lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||T("自由活动","Free time")}`);});
+  const clean=s=>!/灵活|自由|交通/.test(s.type)&&!/灵活时间/.test(s.name);
+  it.days.forEach(d=>{const dl=d.date?d.date.slice(5):"";const sp=(d.splits||[])[0];
+    if(sp){
+      const before=d.stops.filter(s=>(!s.time||s.time<=sp.from.time)&&clean(s)).map(s=>s.name);
+      const after=d.stops.filter(s=>s.time&&s.time>sp.from.time&&clean(s)).map(s=>s.name);
+      lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${before.join(" → ")||"…"}`);
+      lines.push(`  🔀 ${T("分头","Split")}@${sp.from.place||""}`);
+      sp.parties.forEach(p=>lines.push(`   ${p.name||""}：${(p.stops||[]).filter(clean).map(s=>s.name).join(" → ")||T("自由活动","free")}`));
+      lines.push(`  🤝 ${T("汇合","Rejoin")}@${sp.to.place||""}${sp.to.time?" "+sp.to.time:""}${after.length?"："+after.join(" → "):""}`);
+    }else{
+      const spots=d.stops.filter(clean).map(s=>s.name).filter(Boolean);
+      lines.push(`Day${d.day}${dl?`(${dl})`:""} ${d.place||""}：${spots.join(" → ")||T("自由活动","Free time")}`);
+    }});
   return lines.join("\n");}
 /* ---- 攻略导出长图（纯 canvas 自绘；自动分页避免超出手机 canvas 上限导致模糊；预览中长按保存） ---- */
 async function exportLongImage(t){
@@ -988,7 +1031,7 @@ async function exportLongImage(t){
     const head=(`Day ${d.day}`+(d.date?` · ${d.date.slice(5)}`:"")+(d.place?` · ${d.place}`:"")+(d.title?` — ${d.title}`:""));
     const headLines=wrap(head,21,"700",fSans,innerW);
     let h=pad + headLines.length*30 + 6;
-    const stops=(d.stops||[]);
+    const stops=flatDayForExport(d);
     const rows=stops.map(s=>{
       const nameLines=wrap((s.name||T("（未命名）","(unnamed)"))+(s.type?`  · ${s.type}`:""),17,"600",fSans,nameW);
       const meta=[s.area,s.note].filter(Boolean).join(" · ");
@@ -1370,23 +1413,102 @@ async function sendChat(t,text){const log=tripChat(t);pushChat(t,{role:"user",te
     renderTripMain();  // 刷新行程 + 对话
   }catch(err){pushChat(t,{role:"assistant",text:T("出错了：","Error: ")+err.message});renderTripMain()}
 }
+function stopRowHTML(s){const fl=/灵活|自由/.test(s.type)||/灵活时间/.test(s.name);return `<div class="stop${fl?' flex':''}"><span class="t">${esc(s.time||"")}</span><div class="body"><b>${fl?"🕊 ":""}${esc(s.name)}</b>${s.type&&!fl?`<span class="tp">${esc(s.type)}</span>`:""}${s.area?`<span class="tp">${esc(s.area)}</span>`:""}${s.note?`<span class="n">${esc(s.note)}</span>`:""}</div></div>`}
+function splitBlockHTML(sp){
+  const lanes=(sp.parties||[]).map((p,i)=>{const c=SPLIT_PC[i%SPLIT_PC.length];return `<div class="party-lane" style="border-top-color:${c}"><div class="ph"><span style="width:9px;height:9px;border-radius:2px;background:${c};display:inline-block;flex:none"></span>${esc(p.name||(T("队","Party")+(i+1)))}${p.members?` <span style="font-weight:400;color:var(--ink-faint)">· ${esc(p.members)}</span>`:""}</div>${p.wants?`<div class="pw">${esc(p.wants)}</div>`:""}${(p.stops||[]).map(s=>`<div class="pstop"><span class="t">${esc(s.time||"")}</span><b>${esc(s.name)}</b>${s.note?`<span class="n">${esc(s.note)}</span>`:""}</div>`).join("")}</div>`}).join("");
+  return `<div class="split-bar"><span>🔀</span><span class="t">${esc(sp.from.time||"")}</span><b>${esc(sp.from.place||"")}</b><span class="who">· ${T("分头行动","Split up")}</span></div><div class="split-lanes">${lanes}</div><div class="split-bar"><span>🤝</span><span class="t">${esc(sp.to.time||"")}</span><b>${esc(sp.to.place||"")}</b><span class="who">· ${T("汇合","Rejoin")}</span>${sp.aiPicked?`<span class="ai-pick">✨ ${T("AI 选的汇合点","AI-picked meetup")}</span>`:""}</div>`;
+}
+function dayBodyHTML(d){const sp=(d.splits||[])[0];
+  if(!sp)return (d.stops||[]).map(stopRowHTML).join("");
+  const before=(d.stops||[]).filter(s=>!s.time||s.time<=sp.from.time),after=(d.stops||[]).filter(s=>s.time&&s.time>sp.from.time);
+  return before.map(stopRowHTML).join("")+splitBlockHTML(sp)+after.map(stopRowHTML).join("");}
 function renderItinerary(t,out){const it=t.itinerary;
   if(!it.days.length){out.innerHTML=`<div class="tbl-empty">${T("还没有路线。填好分段（城市+天数）与偏好，点「AI 规划路线」。","No route yet. Fill in segments (city + days) and interests, then click “AI plan route”.")}</div>`;return}
-  out.innerHTML=it.days.map(d=>`<div class="day-card"><div class="day-hd"><span>Day ${d.day}${d.place?" · "+esc(d.place):""}${d.title?" · "+esc(d.title):""}</span><span class="d-date">${esc(d.date||"")}</span></div>
-    ${d.stops.map(s=>{const fl=/灵活|自由/.test(s.type)||/灵活时间/.test(s.name);return `<div class="stop${fl?' flex':''}"><span class="t">${esc(s.time||"")}</span><div class="body"><b>${fl?"🕊 ":""}${esc(s.name)}</b>${s.type&&!fl?`<span class="tp">${esc(s.type)}</span>`:""}${s.area?`<span class="tp">${esc(s.area)}</span>`:""}${s.note?`<span class="n">${esc(s.note)}</span>`:""}</div></div>`}).join("")}
+  out.innerHTML=it.days.map((d,di)=>`<div class="day-card"><div class="day-hd"><span>Day ${d.day}${d.place?" · "+esc(d.place):""}${d.title?" · "+esc(d.title):""}</span><span style="display:flex;align-items:center;gap:9px"><span class="d-date">${esc(d.date||"")}</span><button class="mini" data-split="${di}">${(d.splits&&d.splits.length)?T("✎ 分头","✎ Split"):T("＋ 分头","＋ Split")}</button></span></div>
+    ${dayBodyHTML(d)}
     </div>`).join("")
     +(it.tips.length?`<div class="card"><h3>${T("提示","Tips")}</h3><ul class="tips">${it.tips.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:"")
     +`<button class="btn" id="impList">${T("⬇ 把景点/餐厅/交通导入对应清单","⬇ Import attractions/restaurants/transport to trackers")}</button> <button class="btn" id="liteExport">${T("📤 导出省流版","📤 Export lite")}</button>`;
+  out.querySelectorAll("[data-split]").forEach(b=>b.onclick=()=>openSplitEditor(t,+b.dataset.split));
   $("#impList").onclick=()=>{let na=0,nr=0,nt=0;const ex=k=>new Set(t[k].map(e=>e.name.replace(/\s/g,"").toLowerCase()));
     const ea=ex("attractions"),er=ex("restaurants"),et=ex("transport");
     const transp=ty=>/交通|移动|前往|飞|航班|机场|火车|高铁|新干线|铁|巴士|大巴|船|渡轮|地铁|打车|包车|租车/.test(ty);
     const tsub=ty=>/飞|航班|机场/.test(ty)?"机票":(/火车|高铁|新干线|铁/.test(ty)?"火车":(/船|渡轮/.test(ty)?"船/渡轮":(/租车/.test(ty)?"租车":"当地交通")));
-    it.days.forEach(d=>d.stops.forEach(s=>{if(/灵活|自由/.test(s.type)||/灵活时间/.test(s.name))return;const k=s.name.replace(/\s/g,"").toLowerCase();const when=(d.date||"Day"+d.day)+(s.time?" "+s.time:"");
+    it.days.forEach(d=>realStops(d).forEach(s=>{if(/灵活|自由/.test(s.type)||/灵活时间/.test(s.name))return;const k=s.name.replace(/\s/g,"").toLowerCase();const when=(d.date||"Day"+d.day)+(s.time?" "+s.time:"");
       if(transp(s.type)||transp(s.name)){if(!et.has(k)){const it2=normItem({name:s.name,when,status:"未预订",note:s.area||d.place});it2.type=tsub(s.type+s.name);t.transport.push(it2);et.add(k);nt++}}
       else if(/餐厅|美食|吃|饭|食/.test(s.type)){if(!er.has(k)){t.restaurants.push(normItem({name:s.name,when,status:"待定",note:s.area||d.place}));er.add(k);nr++}}
       else{if(!ea.has(k)){t.attractions.push(normItem({name:s.name,when:d.date||("Day"+d.day),status:"待定",note:s.area||d.place}));ea.add(k);na++}}}));
     markDirty();toast(T(`已导入 ${na} 景点、${nr} 餐厅、${nt} 交通`,`Imported ${na} attractions, ${nr} restaurants, ${nt} transport`));renderTripMain()};
   $("#liteExport").onclick=()=>openExport(t);
+}
+/* ---- 分头行动：编辑器 + AI 规划 ---- */
+function partyRowHTML(p){return `<div class="sp-party-ed"><button class="sp-rm-p" title="${T("删除该队","Remove party")}">✕</button>
+  <div class="fields"><div class="field"><label>${T("队名","Party name")}</label><input class="p-name" value="${esc(p&&p.name||"")}" placeholder="${T("如 A 队","e.g. Party A")}"></div>
+  <div class="field"><label>${T("成员（可选）","Members (optional)")}</label><input class="p-mem" value="${esc(p&&p.members||"")}" placeholder="${T("如 爸爸","e.g. Dad")}"></div></div>
+  <div class="field" style="margin-bottom:6px"><label>${T("这队想去 / 偏好","Wants / preferences")}</label><textarea class="p-wants" rows="2" placeholder="${T("想去的景点、餐厅、类型…","Spots, food, vibe this party wants…")}">${esc(p&&p.wants||"")}</textarea></div></div>`}
+function openSplitEditor(t,di){
+  const d=t.itinerary.days[di]; if(!d)return;
+  const ex=(d.splits||[])[0], stops=d.stops||[], model=$("#splitModal");
+  const fromOpts=stops.map((s,i)=>`<option value="${i}"${ex&&ex.from&&s.time&&s.time===ex.from.time?" selected":""}>${T("从「","after ‘")}${esc(s.name)}${s.time?"」("+esc(s.time)+")":"」"}${T(" 之后分开"," ’")}</option>`).join("");
+  const parties=(ex&&ex.parties&&ex.parties.length?ex.parties:[{},{}]);
+  model.innerHTML=`<h2 class="serif">${T("分头行动","Split up")} · Day ${d.day}${d.place?" · "+esc(d.place):""}</h2>
+    <p class="lede">${T("圈出这天的一段时间，分成几个小队各玩各的，再到一个地点汇合。AI 会给每队排最优路线、并保证都能按时到汇合点。","Carve out part of this day, split into parties who each do their own thing, then rejoin. AI plans each party’s optimal route and makes sure everyone reaches the meetup on time.")}</p>
+    <div class="field"><label>${T("从哪里分开","Split from")}</label><select id="spFrom">${fromOpts||`<option value="-1">${T("这天还没有共同安排（从当地分开）","No shared stops yet")}</option>`}</select></div>
+    <div class="field"><label>${T("小队（2–4）","Parties (2–4)")}</label><div id="spParties">${parties.map(partyRowHTML).join("")}</div>
+      <button class="btn" id="spAddParty" style="margin-top:2px">${T("＋ 添加小队","＋ Add party")}</button></div>
+    <div class="field"><label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin:0"><input type="checkbox" id="spAiPick" style="width:auto"${!ex||ex.aiPicked?" checked":""}> <span>${T("让 AI 选最优汇合点","Let AI pick the best meetup")}</span></label></div>
+    <div class="fields"><div class="field" id="spPlaceWrap" style="display:none"><label>${T("汇合地点","Meetup place")}</label><input id="spRejPlace" value="${esc(ex&&!ex.aiPicked&&ex.to?ex.to.place:"")}" placeholder="${T("如 酒店 / 某餐厅","e.g. hotel / a restaurant")}"></div>
+      <div class="field"><label>${T("汇合时间（大概）","Rejoin time (approx.)")}</label><input id="spRejTime" value="${esc(ex&&ex.to&&ex.to.time?ex.to.time:"18:00")}" placeholder="18:00"></div></div>
+    <div id="spStat" class="hint" style="min-height:16px"></div>
+    <div class="modal-foot">${ex?`<button class="btn" id="spDel" style="margin-right:auto">${T("删除分头","Remove split")}</button>`:""}<button class="btn" id="spCancel">${T("取消","Cancel")}</button><button class="btn primary" id="spGo">${T("AI 规划这段分头","AI plan this split")}</button></div>`;
+  $("#splitOverlay").classList.add("open");
+  const placeWrap=$("#spPlaceWrap"),aiPick=$("#spAiPick");
+  const syncPick=()=>{placeWrap.style.display=aiPick.checked?"none":"block"};aiPick.onchange=syncPick;syncPick();
+  $("#spAddParty").onclick=()=>{const box=$("#spParties");if(box.querySelectorAll(".sp-party-ed").length>=4){toast(T("最多 4 个小队","Up to 4 parties"),true);return}box.insertAdjacentHTML("beforeend",partyRowHTML(null))};
+  $("#spParties").addEventListener("click",e=>{const b=e.target.closest(".sp-rm-p");if(!b)return;const box=$("#spParties");if(box.querySelectorAll(".sp-party-ed").length<=2){toast(T("至少 2 个小队","At least 2 parties"),true);return}b.closest(".sp-party-ed").remove()});
+  const close=()=>$("#splitOverlay").classList.remove("open");
+  $("#spCancel").onclick=close;
+  $("#splitOverlay").onclick=e=>{if(e.target===$("#splitOverlay"))close()};
+  if($("#spDel"))$("#spDel").onclick=()=>{if(!confirm(T("删除这天的分头安排？","Remove the split on this day?")))return;snapItinerary(t,"删除分头");d.splits=[];markDirty();close();renderTripMain()};
+  $("#spGo").onclick=async()=>{
+    const fi=parseInt($("#spFrom").value);
+    const parties=[...$("#spParties").querySelectorAll(".sp-party-ed")].map(r=>({name:r.querySelector(".p-name").value.trim(),members:r.querySelector(".p-mem").value.trim(),wants:r.querySelector(".p-wants").value.trim()}));
+    if(parties.filter(p=>p.wants||p.name).length<2){toast(T("先给至少 2 个小队填上队名或想去什么","Fill in name/wants for at least 2 parties"),true);return}
+    const cfg={fromStop:(fi>=0?stops[fi]:null),aiPick:aiPick.checked,rejPlace:$("#spRejPlace").value.trim(),rejTime:$("#spRejTime").value.trim(),parties};
+    const stat=$("#spStat");stat.textContent=T("AI 规划中…（约 10–25 秒）","Planning… (~10–25s)");$("#spGo").disabled=true;
+    try{await planSplit(t,di,cfg);close();toast(T("分头已排好 ✓","Split planned ✓"))}
+    catch(err){stat.textContent="";$("#spGo").disabled=false;toast(T("分头规划失败：","Split planning failed: ")+err.message,true)}
+  };
+}
+async function planSplit(t,di,cfg){
+  const d=t.itinerary.days[di], model=state.settings.planModel||"claude-sonnet-4-6";
+  const fromStop=cfg.fromStop, fromPlace=fromStop?fromStop.name:(d.place||t.destination||""), fromTime=fromStop?fromStop.time:"";
+  const dayCtx=(d.stops||[]).map(s=>`${s.time||""} ${s.name}${s.area?"（"+s.area+"）":""}`).join("；")||"（无）";
+  const partyText=cfg.parties.map((p,i)=>`${i+1}. ${p.name||("队"+(i+1))}${p.members?"（"+p.members+"）":""}：想去/偏好：${p.wants||"（未填，随意安排）"}`).join("\n");
+  const rejoinInstr=cfg.aiPick
+    ?`由你【选最优汇合点】：综合各队落点，选一个让各队到达用时尽量均衡、整体绕路最少、且顺路（通常是吃晚饭/交通枢纽/共同下一段的必经点）的地点；目标汇合时间约 ${cfg.rejTime||"傍晚"}。`
+    :`汇合点由用户指定：地点「${cfg.rejPlace||"（未填，请就近选一个合理点）"}」，时间约 ${cfg.rejTime||"傍晚"}。各队都要按时到。`;
+  const sys="你是资深旅行规划师。现在只处理某一天里的一段【分头行动】：一组人从【分开点】拆成几个小队各自游玩，再到【汇合点】会合。原则："
+    +"1)每个小队从分开点出发，把该队想去的点按地理就近串成一条【单向、不折返】的线，餐厅放就近的餐时；"
+    +"2)相邻两点之间【预留真实交通时间】(地铁/步行/打车)让 time 顺延、不要当 0；据此判断该队时段内能装几个点，装不下就减点、不硬塞超时；"
+    +"3)【务必保证每个小队都能在汇合时间前赶到汇合点】，把最后一个点到汇合点的交通也算进去；"
+    +"4)"+rejoinInstr
+    +"5)分开点之前、汇合之后为【共同段】(大家一起)，按原有安排就近保留/微调，分别放进 before / after。"
+    +"先用不超过80字说明各队思路与汇合点选择理由；然后另起一行写 ===JSON=== ，其后只输出 JSON。"
+    +'JSON结构:{"before":[{"time":"","name":"","type":"景点|餐厅|活动|交通","area":"","note":"含移动方式/时长"}],"parties":[{"name":"队名","stops":[{"time":"","name":"","type":"","area":"","note":""}]}],"rejoin":{"time":"18:00","place":"汇合地点","note":"理由"},"after":[{"time":"","name":"","type":"","area":"","note":""}]}。'
+    +"parties 的顺序与数量必须与下面给出的一致、name 用给定队名。中文。"+AILANG();
+  const user=`城市/当天：${d.place||t.destination||""}（Day ${d.day}${d.date?"，"+d.date:""}）\n当天原本的共同安排（参考，可就近微调）：${dayCtx}\n分开点：${fromPlace}${fromTime?"，约 "+fromTime:""}（其之前为共同段）\n${rejoinInstr}\n各小队（共 ${cfg.parties.length} 队）：\n${partyText}\n每日可用时间默认到 22:00（排期含交通时间）`;
+  let raw=await callClaude(sys,user,model,4200);state._lastAI=raw;
+  let txt=raw;const mk=txt.lastIndexOf("===JSON===");if(mk>=0)txt=txt.slice(mk+10);
+  txt=txt.replace(/```json|```/g,"").trim();const a=txt.indexOf("{"),z=txt.lastIndexOf("}");if(a>=0&&z>a)txt=txt.slice(a,z+1);
+  let data;try{data=JSON.parse(txt)}catch(pe){data=tryRepairJSON(txt)}
+  if(!data||!Array.isArray(data.parties)||!data.parties.length)throw new Error(T("返回内容无法解析为分头行程","Couldn’t parse split itinerary"));
+  snapItinerary(t,"分头规划");
+  d.stops=normStops([...(data.before||[]),...(data.after||[])]);
+  const rej=data.rejoin||{};
+  const parties=cfg.parties.map((p,i)=>({id:uid(),name:p.name||("队"+(i+1)),members:p.members||"",wants:p.wants||"",stops:normStops((data.parties[i]&&data.parties[i].stops)||[])}));
+  d.splits=[{id:uid(),from:{time:fromTime||"",place:fromPlace||""},to:{time:(cfg.aiPick?(rej.time||cfg.rejTime):cfg.rejTime)||rej.time||"",place:(cfg.aiPick?(rej.place||cfg.rejPlace):cfg.rejPlace)||rej.place||""},aiPicked:!!cfg.aiPick,parties}];
+  markDirty();renderTripMain();
 }
 function tryRepairJSON(s){try{let str=s,inStr=false,esc2=false,stack=[];const close={'{':'}','[':']'};
   for(const ch of str){if(inStr){if(esc2)esc2=false;else if(ch==='\\')esc2=true;else if(ch==='"')inStr=false;continue}
